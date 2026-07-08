@@ -5,13 +5,13 @@ import { LucideIcon } from "lucide-react";
 
 export function Pipeline() {
   return (
-    <section className="container py-6 md:py-10 max-w-6xl mx-auto">
+    <section className="container py-6 md:py-10 px-4 md:px-6 max-w-6xl mx-auto">
       <div className="mx-auto max-w-2xl text-center mb-12">
         <div className="text-xs font-semibold uppercase tracking-wider text-accent mb-3 font-mono">Inside the engine</div>
         <h2 className="display-md text-foreground leading-tight">15 specialised modules. One pipeline.</h2>
         <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">Every module is a focused agent with its own prompt, rubric and output.</p>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {moduleDefs.map((m, i) => {
           const Icon = (Icons as unknown as Record<string, LucideIcon>)[m.icon] ?? Icons.Sparkles;
           return (

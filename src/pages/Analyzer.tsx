@@ -1,6 +1,7 @@
 import SiteLayout from "@/components/site/SiteLayout";
 import { UploadZone } from "@/components/analyzer/UploadZone";
 import { ScoreRing } from "@/components/analyzer/ScoreRing";
+import { PremiumScoreRing } from "@/components/analyzer/PremiumScoreRing";
 import { ModuleCard } from "@/components/analyzer/ModuleCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertCircle, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft } from "lucide-react";
+import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertTriangle, X, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { buildAnalysisPdf, buildCoverLetterPdf, AnalysisReport } from "@/lib/reportPdf";
@@ -224,88 +225,82 @@ export default function Analyzer() {
 
         <AnimatePresence mode="wait">
           {stage === "input" && (
-            <motion.div key="input" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-              <div className="space-y-6">
+            <motion.div key="input" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex flex-col lg:grid lg:grid-cols-[1.1fr_1fr] gap-6 w-full min-w-0">
+              {/* Left column — resume upload + history */}
+              <div className="space-y-6 min-w-0 w-full">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">step 1 · resume</div>
                 <UploadZone onFile={setFile} />
                 {error && (
-                  <div className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                  <div className="flex flex-col sm:flex-row items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold">Analysis failed</div>
-                      <div className="mt-0.5 break-words text-xs opacity-90">{error}</div>
+                      <div className="mt-0.5 break-all text-xs opacity-90">{error}</div>
                     </div>
                     <Button size="sm" variant="outline" onClick={run} className="shrink-0 border-destructive/40 text-destructive hover:bg-destructive/10">
-                      Retry analysis
+                      Retry
                     </Button>
                   </div>
                 )}
                 {history.length > 0 && (
-                  <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground"><HistoryIcon className="h-4 w-4 text-muted-foreground" /> Resume version history</div>
-                      <button onClick={() => { localStorage.removeItem("resumai.history.v1"); setHistory([]); }} className="text-xs text-muted-foreground hover:text-accent">Clear all</button>
+                  <div className="rounded-xl border border-border/80 bg-card p-4">
+                    <div className="mb-4 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-foreground min-w-0">
+                        <HistoryIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="truncate">Resume version history</span>
+                      </div>
+                      <button onClick={() => { localStorage.removeItem("resumai.history.v1"); setHistory([]); }} className="text-xs text-muted-foreground hover:text-accent shrink-0">Clear all</button>
                     </div>
-                    <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+                    <div className="max-h-56 space-y-2 overflow-y-auto">
                       {history.map(h => (
-                        <div key={h.id} className="flex items-center gap-3 rounded-lg border border-border/80 bg-background/50 px-3 py-2.5">
-                          <div className={`grid h-8 w-8 place-items-center rounded-md font-mono text-xs font-semibold ${h.overallScore >= 85 ? "bg-success/10 text-success" : h.overallScore >= 70 ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}`}>{h.overallScore}</div>
+                        <div key={h.id} className="flex items-center gap-2 rounded-lg border border-border/80 bg-background/50 px-3 py-2.5 min-w-0">
+                          <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-md font-mono text-xs font-semibold ${h.overallScore >= 85 ? "bg-success/10 text-success" : h.overallScore >= 70 ? "bg-primary/10 text-primary" : "bg-warning/10 text-warning"}`}>{h.overallScore}</div>
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-sm font-medium text-foreground">{h.role} @ {h.company}</div>
                             <div className="text-[10px] text-muted-foreground">{new Date(h.createdAt).toLocaleString()}</div>
                           </div>
-                          <button onClick={() => loadHistory(h)} className="text-xs font-medium text-primary hover:underline">Open</button>
-                          <button onClick={() => { removeHistory(h.id); setHistory(getHistory()); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+                          <button onClick={() => loadHistory(h)} className="text-xs font-medium text-primary hover:underline shrink-0">Open</button>
+                          <button onClick={() => { removeHistory(h.id); setHistory(getHistory()); }} className="text-muted-foreground hover:text-destructive shrink-0"><Trash2 className="h-3.5 w-3.5" /></button>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
               </div>
-              <div className="space-y-6">
+
+              {/* Right column — JD + settings */}
+              <div className="space-y-6 min-w-0 w-full">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">step 2 · target role</div>
-                <div className="grid gap-4 rounded-xl border border-border/80 bg-card p-4 sm:p-6">
+                <div className="rounded-xl border border-border/80 bg-card p-4 space-y-4 w-full min-w-0">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                       <Label htmlFor="company" className="text-sm font-medium text-foreground">Company</Label>
-                      <Input id="company" className="bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Stripe" value={company} onChange={e => setCompany(e.target.value)} />
+                      <Input id="company" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Stripe" value={company} onChange={e => setCompany(e.target.value)} />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                       <Label htmlFor="role" className="text-sm font-medium text-foreground">Target role</Label>
-                      <Input id="role" className="bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Senior Backend Engineer" value={role} onChange={e => setRole(e.target.value)} />
+                      <Input id="role" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Senior Backend Engineer" value={role} onChange={e => setRole(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="jd" className="text-sm font-medium text-foreground">Job description</Label>
-                    <Textarea id="jd" className="bg-card border-border/80 focus-visible:ring-foreground" rows={8} placeholder="Paste the job description…" value={jd} onChange={e => setJd(e.target.value)} />
+                    <Textarea id="jd" className="w-full bg-card border-border/80 focus-visible:ring-foreground" rows={8} placeholder="Paste the job description…" value={jd} onChange={e => setJd(e.target.value)} />
                   </div>
-                  <div className="flex flex-col gap-2.5 py-1">
+                  <div className="flex flex-col gap-2">
                     <span className="text-xs font-medium text-muted-foreground">Rewrite tone</span>
-                    <div className="inline-flex flex-wrap gap-1 bg-background p-1 rounded-full border border-border/60 max-w-max">
+                    <div className="flex flex-wrap gap-1.5 bg-background p-1.5 rounded-2xl border border-border/60 w-full">
                       {tones.map(t => (
                         <button key={t} type="button" onClick={() => setTone(t)}
-                          className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all ${
-                            tone === t 
-                              ? "bg-card text-foreground border border-border/80 shadow-sm" 
+                          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                            tone === t
+                              ? "bg-card text-foreground border border-border/80 shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
                           }`}>{t}</button>
                       ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/50 p-3 text-xs">
-                    <input
-                      id="debugFailPrimary"
-                      type="checkbox"
-                      checked={debugFailPrimary}
-                      onChange={(e) => setDebugFailPrimary(e.target.checked)}
-                      className="h-4 w-4 rounded border-border text-foreground focus:ring-foreground animate-none"
-                    />
-                    <label htmlFor="debugFailPrimary" className="cursor-pointer font-medium text-muted-foreground hover:text-foreground select-none">
-                      Debug Mode: Force Primary Provider Failure (Test OpenRouter Fallback)
-                    </label>
-                  </div>
-                  <Button size="lg" onClick={run} className="mt-2 h-11 bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium rounded-md select-none">
-                    Run analysis
+                  <Button size="lg" onClick={run} className="w-full h-11 bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium rounded-md select-none" disabled={!file || !jd || !company || !role || loading}>
+                    {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : "Run AI Analysis"}
                   </Button>
                 </div>
               </div>
@@ -324,18 +319,72 @@ export default function Analyzer() {
 
           {stage === "results" && result && (
             <motion.div key="results" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-              {/* Top summary 2x2 Grid */}
-              <div className="grid gap-4 sm:gap-6 grid-cols-2">
+              {/* Top summary Grid */}
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
                 
-                {/* 1. Score Box */}
-                <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-8 flex flex-col xl:flex-row items-center justify-center xl:justify-between gap-4 sm:gap-6 text-center xl:text-left">
-                  <div className="flex-1">
-                    <h2 className="text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-muted-foreground font-mono mb-2">Overall ATS Score</h2>
-                    <div className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-foreground leading-relaxed">
+                {/* 1. Score Box (Premium SaaS Hero Card) */}
+                <div className="col-span-1 lg:col-span-2 rounded-[24px] border border-border/60 bg-card p-5 sm:p-10 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_24px_-8px_rgba(0,0,0,0.2)] flex flex-col-reverse lg:flex-row items-center lg:items-start xl:items-center gap-8 lg:gap-10 overflow-hidden relative w-full">
+                  {/* Subtle glass reflection overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 pointer-events-none" />
+                  
+                  {/* Left Column (70%) */}
+                  <div className="flex-1 w-full relative z-10 flex flex-col justify-center text-center lg:text-left">
+                    <span className="text-[10px] sm:text-[12px] font-bold tracking-[0.2em] uppercase text-muted-foreground font-mono mb-2 sm:mb-3 block">Overall ATS Score</span>
+                    <h2 className={`text-2xl sm:text-3xl xl:text-4xl font-bold tracking-tight mb-3 sm:mb-4 ${
+                      result.overallScore >= 90 ? "text-emerald-600 dark:text-emerald-400" :
+                      result.overallScore >= 75 ? "text-green-600 dark:text-green-400" :
+                      result.overallScore >= 60 ? "text-yellow-600 dark:text-yellow-400" :
+                      result.overallScore >= 40 ? "text-orange-600 dark:text-orange-400" :
+                      "text-red-600 dark:text-red-400"
+                    }`}>
+                      {result.overallScore >= 90 ? "Excellent Match" :
+                       result.overallScore >= 75 ? "Strong Match" :
+                       result.overallScore >= 60 ? "Moderate Match" :
+                       result.overallScore >= 40 ? "Needs Improvement" :
+                       "Poor Match"}
+                    </h2>
+                    <p className="text-[14px] sm:text-[16px] text-muted-foreground leading-relaxed max-w-xl mb-6 sm:mb-8 mx-auto lg:mx-0">
                       {result.verdict}
+                    </p>
+                    
+                    {/* Findings Chips */}
+                    <div className="flex flex-col gap-3 w-full max-w-xl">
+                      {result.missingKeywords.length > 0 && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="group flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-3 sm:p-4 hover:bg-destructive/10 transition-colors">
+                          <div className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-destructive/20 text-destructive"><X className="h-3 w-3" /></div>
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">Missing Critical Keywords</div>
+                            <div className="text-xs text-muted-foreground mt-1">Add {result.missingKeywords.slice(0, 3).join(", ")} to boost match rate.</div>
+                          </div>
+                        </motion.div>
+                      )}
+                      
+                      {result.categoryScores.some(c => c.score < 70) && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="group flex items-start gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 sm:p-4 hover:bg-orange-500/10 transition-colors">
+                          <div className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-orange-500/20 text-orange-600"><AlertTriangle className="h-3 w-3" /></div>
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">Weak Category Performance</div>
+                            <div className="text-xs text-muted-foreground mt-1">Improve your {result.categoryScores.find(c => c.score < 70)?.name.toLowerCase()} for better ranking.</div>
+                          </div>
+                        </motion.div>
+                      )}
+                      
+                      {result.overallScore >= 80 && result.missingKeywords.length === 0 && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="group flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4 hover:bg-emerald-500/10 transition-colors">
+                          <div className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-500/20 text-emerald-600"><CheckCircle2 className="h-3 w-3" /></div>
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">Excellent Keyword Coverage</div>
+                            <div className="text-xs text-muted-foreground mt-1">You perfectly align with the core requirements of this JD.</div>
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
-                  <ScoreRing value={result.overallScore} size={80} />
+                  
+                  {/* Right Column (30%) */}
+                  <div className="w-full md:w-auto relative z-10 flex shrink-0 justify-center">
+                    <PremiumScoreRing score={result.overallScore} />
+                  </div>
                 </div>
 
                 {/* 2. Category breakdown */}
@@ -413,6 +462,33 @@ export default function Analyzer() {
                     <Mail className="h-4 w-4" /> Cover letter PDF
                   </button>
                   <button onClick={() => setStage("input")} className="text-muted-foreground hover:text-foreground text-sm font-medium px-4">New analysis</button>
+                </div>
+              </div>
+
+              {/* Networking Action Nodes */}
+              <div className="mt-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="grid h-6 w-6 place-items-center rounded-md bg-secondary text-foreground">
+                    <Mail className="h-3 w-3" />
+                  </div>
+                  <h3 className="text-lg font-semibold tracking-tight font-display text-foreground">Outreach Templates</h3>
+                </div>
+                <div className="grid gap-6 md:grid-cols-3">
+                  <EditableBlock 
+                    title="Cold Email" 
+                    value={result.coldEmail || `Subject: Experienced ${role} candidate - ${result.candidate.name}\n\nHi [Hiring Manager Name],\n\nI hope this email finds you well.\n\nI recently came across the ${role} opening at ${company} and was immediately drawn to the opportunity. With my background in [Your Key Skill/Tech], I have successfully [Insert Key Achievement or Metric, e.g., scaled systems to handle 10k RPS].\n\nI’ve attached my resume for your review. I would love to briefly connect and discuss how my experience aligns with ${company}'s current goals.\n\nBest regards,\n${result.candidate.name}\n[Your LinkedIn URL]\n[Your Portfolio/GitHub]`} 
+                    onChange={(v) => { if(result) result.coldEmail = v; }} 
+                  />
+                  <EditableBlock 
+                    title="LinkedIn Connection Request" 
+                    value={`Hi [Name],\n\nI'm ${result.candidate.name}. I saw the recent opening for the ${role} position at ${company}. Given my background in [Your Field], I've been following ${company}'s work and would love to connect and stay in touch!\n\nBest,\n${result.candidate.name}`} 
+                    onChange={(v) => {}} 
+                  />
+                  <EditableBlock 
+                    title="Recruiter Follow-up" 
+                    value={result.recruiterDm || `Hi [Recruiter Name],\n\nI hope you're having a great week.\n\nI recently submitted my application for the ${role} role at ${company}. I know you are likely reviewing many applications, but I wanted to quickly reiterate my strong interest. With my recent experience in [Key Skill], I am confident I could hit the ground running and deliver value to the team.\n\nPlease let me know if there is any additional information I can provide. I look forward to the possibility of discussing this further.\n\nThank you for your time,\n${result.candidate.name}`} 
+                    onChange={(v) => { if(result) result.recruiterDm = v; }} 
+                  />
                 </div>
               </div>
 

@@ -12,7 +12,7 @@ const items = [
 
 export function Features() {
   return (
-    <section className="container py-6 md:py-10 max-w-6xl mx-auto" id="features">
+    <section className="container py-6 md:py-10 px-4 md:px-6 max-w-6xl mx-auto" id="features">
       <div className="max-w-2xl mb-12">
         <div className="text-xs font-semibold uppercase tracking-wider text-accent mb-3 font-mono">Built for outcomes</div>
         <h2 className="display-md text-foreground leading-tight">
@@ -21,7 +21,7 @@ export function Features() {
         <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">A focused toolkit, not a Christmas tree of features. Each module earns its place by moving your score and your callback rate.</p>
       </div>
 
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((it, i) => (
           <motion.div
             key={it.title}

@@ -3,7 +3,7 @@ import { categoryScores } from "@/data/sampleAnalysis";
 
 export function ScoreShowcase() {
   return (
-    <section className="container py-6 md:py-8">
+    <section className="container py-6 md:py-8 px-4 md:px-6">
       <div className="rounded-xl border border-border/80 bg-card p-4 sm:p-10 md:p-12 max-w-6xl mx-auto">
         <div className="grid items-center gap-8 md:gap-12 lg:grid-cols-[1fr_1.2fr]">
           <div>

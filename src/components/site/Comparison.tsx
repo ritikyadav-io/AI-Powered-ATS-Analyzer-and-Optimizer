@@ -48,7 +48,7 @@ const rows = [
 
 export function Comparison() {
   return (
-    <section className="container py-8 md:py-12 max-w-6xl mx-auto">
+    <section className="container py-8 md:py-12 px-4 md:px-6 max-w-6xl mx-auto">
       <div className="mx-auto max-w-2xl text-center mb-12">
         <div className="text-xs font-semibold uppercase tracking-wider text-accent mb-3 font-mono">Side-by-side comparison</div>
         <h2 className="display-md text-foreground leading-tight">Engineered to outperform.</h2>

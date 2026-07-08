@@ -6,8 +6,8 @@ import { ScoreRing } from "@/components/analyzer/ScoreRing";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-background">
-      <div className="container relative px-4 pt-4 pb-8 md:px-6 md:pt-12 md:pb-16">
+    <section className="relative overflow-hidden bg-background w-full">
+      <div className="container relative px-4 pt-4 pb-8 md:px-6 md:pt-12 md:pb-16 max-w-6xl mx-auto">
         <div className="grid items-center gap-6 lg:grid-cols-[1.1fr_0.9fr] max-w-6xl mx-auto">
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <motion.div
@@ -61,7 +61,7 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="mt-8 grid max-w-md grid-cols-3 gap-3"
+              className="mt-8 grid w-full max-w-xs sm:max-w-md grid-cols-3 gap-3"
             >
               {[
                 { icon: FileCheck2, label: "ATS-pass rate", value: "94%" },
@@ -119,12 +119,12 @@ export function Hero() {
               </div>
             </div>
 
-            {/* floating badge */}
+            {/* floating badge - positioned within card, no negative offsets */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.8, duration: 0.4 }}
-              className="absolute -left-6 -bottom-4 hidden rounded-lg border border-border/80 bg-card p-4 shadow-none md:block"
+              className="mt-4 hidden rounded-lg border border-border/80 bg-card p-4 shadow-none md:block"
             >
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-md bg-success/10 text-success"><FileCheck2 className="h-5 w-5" /></div>

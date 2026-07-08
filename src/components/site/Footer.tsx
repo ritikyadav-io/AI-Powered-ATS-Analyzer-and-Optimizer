@@ -35,7 +35,7 @@ export function Footer() {
   return (
     <footer className="relative mt-8 border-t border-white/10 bg-[#0a0a0a] text-white">
       <div className="container px-4 py-8 md:px-6 md:py-16">
-        <div className="grid gap-6 sm:grid-cols-2 md:gap-12 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.4fr_repeat(4,1fr)] md:gap-12">
           <div className="sm:col-span-2 md:col-span-1">
             <Link to="/" className="flex items-center gap-2">
               <img src="/logo.png" alt="ElevateCv Logo" className="h-8 w-8 object-contain" style={{ mixBlendMode: 'screen' }} />

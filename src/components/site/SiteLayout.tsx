@@ -22,7 +22,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
   const isLanding = pathname === "/";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-between">
+    <div className="min-h-screen overflow-x-hidden bg-background flex flex-col justify-between">
       <div>
         {isLanding ? (
           <Navbar />

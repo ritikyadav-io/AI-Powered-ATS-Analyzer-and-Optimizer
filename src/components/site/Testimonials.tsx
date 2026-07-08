@@ -9,7 +9,7 @@ const quotes = [
 
 export function Testimonials() {
   return (
-    <section className="container py-6 md:py-10 max-w-6xl mx-auto">
+    <section className="container py-6 md:py-10 px-4 md:px-6 max-w-6xl mx-auto">
       <div className="text-center mb-12">
         <div className="text-xs font-semibold uppercase tracking-wider text-accent mb-3 font-mono">Loved by candidates</div>
         <h2 className="display-md text-foreground leading-tight">Quietly, ruthlessly effective.</h2>
