@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Cream Canvas: #f5f1ec */
+    --background: 35 24% 94%;
+    --foreground: 0 0% 7%; /* Charcoal Ink: #111111 */
+
+    /* White Surface 1: #ffffff */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    /* Ink is System Primary */
+    --primary: 0 0% 7%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Slightly darker cream: #ede8e1 */
+    --secondary: 35 20% 90%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 35 15% 85%;
+    --muted-foreground: 0 0% 38%; /* Ink Muted: #626260 */
+
+    /* Fin Orange: #ff5600 */
+    --accent: 20 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --success: 142 72% 40%;
+
+    /* Hairline border: #d3cec6 */
+    --border: 37 13% 80%;
+    --input: 37 13% 80%;
+    --ring: 0 0% 7%;
+
+    --radius: 0.75rem; /* modest card corners 12px */
+
+    /* Remove heavy drop shadows - depth by surface change */
+    --shadow-glow: none;
+    --shadow-elegant: none;
+    --shadow-card: none;
+  }
+}
+
+@layer base {
+  * { @apply border-border/80; }
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, .font-display {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 500;
+  }
+
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* Custom responsive typography matching Intercom tracking rules but scaled for compact fit */
+  .display-xl {
+    @apply text-4xl md:text-[52px] font-medium tracking-tight;
+    line-height: 1.08;
+    letter-spacing: -1.5px;
+  }
+  .display-lg {
+    @apply text-3xl md:text-[40px] font-medium tracking-tight;
+    line-height: 1.12;
+    letter-spacing: -1.0px;
+  }
+  .display-md {
+    @apply text-2xl md:text-[30px] font-medium tracking-tight;
+    line-height: 1.16;
+    letter-spacing: -0.6px;
+  }
+  .headline {
+    @apply text-xl md:text-[24px] font-medium tracking-tight;
+    line-height: 1.20;
+    letter-spacing: -0.4px;
+  }
+
+  /* Custom Scrollbar to match cream theme */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+}
+
+@layer components {
+  /* Simple crisp borders, no gradients/glows */
+  .hairline-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+  
+  .glass {
+    background: hsl(var(--card) / 0.9);
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  
+  .text-gradient {
+    color: hsl(var(--foreground));
+  }
+  
+  .text-gradient-accent {
+    color: hsl(var(--accent));
+  }
+
+  .button-primary {
+    @apply bg-primary text-primary-foreground font-medium rounded-md px-[18px] py-[10px] transition-colors hover:opacity-90;
+    font-size: 15px;
+  }
+
+  .button-secondary {
+    @apply bg-card text-foreground font-medium rounded-md px-[18px] py-[10px] border border-border transition-colors hover:bg-secondary/40;
+    font-size: 15px;
+  }
+
+  .button-fin {
+    @apply bg-accent text-accent-foreground font-medium rounded-md px-[18px] py-[10px] transition-colors hover:opacity-90;
+    font-size: 15px;
+  }
+}
