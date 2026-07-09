@@ -1,5 +1,4 @@
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 function getScoreTheme(score: number) {
   if (score >= 90) return { 
@@ -36,19 +35,6 @@ export function PremiumScoreRing({ score }: { score: number }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
-
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => Math.round(latest));
-  const [displayScore, setDisplayScore] = useState(0);
-
-  useEffect(() => {
-    const animation = animate(count, score, { duration: 1.5, ease: "easeOut" });
-    const unsubscribe = rounded.on("change", (v) => setDisplayScore(v));
-    return () => {
-      animation.stop();
-      unsubscribe();
-    };
-  }, [score]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -97,7 +83,7 @@ export function PremiumScoreRing({ score }: { score: number }) {
         <div className="absolute flex flex-col items-center justify-center z-20">
           <div className="flex items-baseline gap-1">
             <span className="font-display text-5xl font-bold tracking-tighter text-foreground">
-              {displayScore}
+              {score}
             </span>
             <span className="font-mono text-lg font-medium text-muted-foreground">
               /100

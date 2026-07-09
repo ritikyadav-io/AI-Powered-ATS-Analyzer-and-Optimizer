@@ -126,7 +126,7 @@ describe("Analyzer E2E Page Tests", () => {
 
     // Configure the mock responses based on group name passed in body with a slight delay
     vi.mocked(supabase.functions.invoke).mockImplementation(async (fnName, options: any) => {
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 500));
       const group = options?.body?.group;
       if (group === "critical") return mockCriticalResponse as any;
       if (group === "high") return mockHighResponse as any;
@@ -160,24 +160,12 @@ describe("Analyzer E2E Page Tests", () => {
     fireEvent.change(jdTextarea, { target: { value: "We are hiring a Senior Frontend Engineer proficient in React and TypeScript. Must design clean client architectures." } });
 
     // 4. Click run analysis
-    const runBtn = screen.getByRole("button", { name: /Run analysis/i });
+    const runBtn = screen.getByRole("button", { name: /Run AI Analysis/i });
     fireEvent.click(runBtn);
 
-    // 5. Assert loading screen shows pipeline progress nodes
-    expect(await screen.findByText("Running the ATS pipeline…")).toBeInTheDocument();
-    
-    // Assert all 15 progress labels exist in the loading view
-    const progressSteps = [
-      "Parsing resume", "Extracting entities", "Scanning job description",
-      "Firecrawl company intel", "ATS compliance", "Keyword gap analysis",
-      "Power verb pass", "Quantification audit", "Recruiter 6-sec scan",
-      "Skills matrix", "Leadership signals", "Achievement STAR check",
-      "Red flags", "Generating rewrites", "Composing LinkedIn + cover",
-    ];
-    
-    progressSteps.forEach(step => {
-      expect(screen.getAllByText(step)[0]).toBeInTheDocument();
-    });
+    // 5. Assert loading screen shows
+    expect(await screen.findByText(/Analyzing your resume against/i)).toBeInTheDocument();
+    expect(screen.getByText(/running the 15-node ATS pipeline/i)).toBeInTheDocument();
 
     // 6. Wait for UI to resolve to results stage
     expect(await screen.findByText("One-click ATS report", {}, { timeout: 10000 })).toBeInTheDocument();

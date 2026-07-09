@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertTriangle, X, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft } from "lucide-react";
+import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertTriangle, AlertCircle, X, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { buildAnalysisPdf, buildCoverLetterPdf, AnalysisReport } from "@/lib/reportPdf";
@@ -299,8 +299,8 @@ export default function Analyzer() {
                       ))}
                     </div>
                   </div>
-                  <Button size="lg" onClick={run} className="w-full h-11 bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium rounded-md select-none" disabled={!file || !jd || !company || !role || loading}>
-                    {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : "Run AI Analysis"}
+                  <Button size="lg" onClick={run} className="w-full h-11 bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium rounded-md select-none" disabled={!file || !jd || !company || !role || stage === "analyzing"}>
+                    {stage === "analyzing" ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : "Run AI Analysis"}
                   </Button>
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function Analyzer() {
                 <div className="rounded-xl border border-border/80 bg-card p-6">
                   <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border/40 pb-3 mb-4">
                     <h2 className="text-lg font-semibold tracking-tight text-foreground font-display">Category breakdown</h2>
-                    <span className="font-mono text-xs text-muted-foreground">{result.candidate.name}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{result.candidate.name} · {result.candidate.title}</span>
                   </div>
                   <div className="grid gap-2.5 sm:grid-cols-2">
                     {result.categoryScores.map(c => (
