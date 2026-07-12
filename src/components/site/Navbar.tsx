@@ -58,19 +58,19 @@ export function Navbar() {
 
       {open && (
         <div className="container relative pb-4 md:hidden">
-          <div className="bg-card border border-border/80 mt-2 rounded-lg p-2.5 shadow-sm">
+          <div className="bg-[#0f0f0f] border border-white/10 mt-2 rounded-lg p-2.5 shadow-lg">
             {links.map(l => (
               <Link
                 key={l.to}
                 to={l.to}
                 onClick={() => setOpen(false)}
-                className={`block rounded px-3 py-2 text-[14px] font-medium ${loc.pathname === l.to ? "bg-secondary/60 text-foreground" : "text-muted-foreground"}`}
+                className={`block rounded px-3 py-2 text-[14px] font-medium transition-colors ${loc.pathname === l.to ? "bg-white/10 text-white" : "text-zinc-400 hover:text-white"}`}
               >
                 {l.label}
               </Link>
             ))}
             <Link to="/analyzer" onClick={() => setOpen(false)} className="block mt-2">
-              <Button size="sm" className="w-full bg-primary text-primary-foreground font-medium rounded-md py-2">
+              <Button size="sm" className="w-full bg-white text-black font-medium rounded-md py-2 hover:bg-zinc-200 transition-colors">
                 Analyze resume
               </Button>
             </Link>

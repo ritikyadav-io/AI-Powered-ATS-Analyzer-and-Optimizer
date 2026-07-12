@@ -11,7 +11,7 @@ export function Pipeline() {
         <h2 className="display-md text-foreground leading-tight">15 specialised modules. One pipeline.</h2>
         <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">Every module is a focused agent with its own prompt, rubric and output.</p>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {moduleDefs.map((m, i) => {
           const Icon = (Icons as unknown as Record<string, LucideIcon>)[m.icon] ?? Icons.Sparkles;
           return (

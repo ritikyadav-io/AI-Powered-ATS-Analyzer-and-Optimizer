@@ -455,13 +455,13 @@ export default function Analyzer() {
                   <div className="text-xs text-muted-foreground leading-normal">Full PDF with scores, gaps, rewrites & cover letter — paste into ChatGPT/Claude to regenerate a 90+ resume.</div>
                 </div>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 w-full sm:w-auto">
-                  <button onClick={downloadFullReport} className="bg-accent text-white font-medium rounded-md px-[18px] py-[10px] text-sm hover:opacity-90 transition-opacity flex items-center gap-1.5">
+                  <button onClick={downloadFullReport} className="bg-accent text-white font-medium rounded-md px-[18px] py-[10px] text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 w-full sm:w-auto">
                     <FileDown className="h-4 w-4" /> Download full PDF report
                   </button>
-                  <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-[18px] py-[10px] text-sm hover:bg-secondary/20 transition-colors flex items-center gap-1.5">
+                  <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-[18px] py-[10px] text-sm hover:bg-secondary/20 transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto">
                     <Mail className="h-4 w-4" /> Cover letter PDF
                   </button>
-                  <button onClick={() => setStage("input")} className="text-muted-foreground hover:text-foreground text-sm font-medium px-4">New analysis</button>
+                  <button onClick={() => setStage("input")} className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2 w-full sm:w-auto text-center">New analysis</button>
                 </div>
               </div>
 
@@ -583,24 +583,48 @@ export default function Analyzer() {
               )}
 
               {/* Tabs */}
-              <div className="flex flex-wrap gap-1 border-b border-border/40">
-                {[
-                  { id: "modules" as const, label: "Modules", icon: Eye },
-                  { id: "rewrite" as const, label: "AI Rewrite", icon: Wand2 },
-                  { id: "preview" as const, label: "Compare & Export", icon: FileCode2 },
-                ].map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => setTab(t.id)}
-                    className={`flex items-center gap-2 border-b-2 px-4 py-3 text-[15px] font-medium transition-all ${
-                      tab === t.id 
-                        ? "border-foreground text-foreground" 
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <t.icon className="h-4 w-4" /> {t.label}
-                  </button>
-                ))}
+              <div className="w-full">
+                {/* Mobile Segmented Control (iOS style) */}
+                <div className="flex sm:hidden rounded-lg bg-secondary/70 p-1 w-full gap-1 mb-4 select-none">
+                  {[
+                    { id: "modules" as const, label: "Modules", icon: Eye },
+                    { id: "rewrite" as const, label: "AI Rewrite", icon: Wand2 },
+                    { id: "preview" as const, label: "Compare", icon: FileCode2 },
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTab(t.id)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium transition-all ${
+                        tab === t.id 
+                          ? "bg-card text-foreground shadow-xs font-semibold" 
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <t.icon className="h-3.5 w-3.5" /> {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Desktop Tabs */}
+                <div className="hidden sm:flex gap-1 border-b border-border/40 w-full">
+                  {[
+                    { id: "modules" as const, label: "Modules", icon: Eye },
+                    { id: "rewrite" as const, label: "AI Rewrite", icon: Wand2 },
+                    { id: "preview" as const, label: "Compare & Export", icon: FileCode2 },
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTab(t.id)}
+                      className={`flex items-center gap-2 border-b-2 px-4 py-3 text-[15px] font-medium transition-all ${
+                        tab === t.id 
+                          ? "border-foreground text-foreground font-semibold" 
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <t.icon className="h-4 w-4" /> {t.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {tab === "modules" && (
