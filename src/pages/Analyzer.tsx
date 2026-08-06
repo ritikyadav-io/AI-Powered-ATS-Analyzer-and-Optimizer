@@ -3,6 +3,7 @@ import { UploadZone } from "@/components/analyzer/UploadZone";
 import { ScoreRing } from "@/components/analyzer/ScoreRing";
 import { PremiumScoreRing } from "@/components/analyzer/PremiumScoreRing";
 import { ModuleCard } from "@/components/analyzer/ModuleCard";
+import { ProfessorAudit } from "@/components/analyzer/ProfessorAudit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -447,6 +448,9 @@ export default function Analyzer() {
                 </div>
 
               </div>
+
+              {/* Professor Executive Audit Masterplan */}
+              <ProfessorAudit result={result} />
 
               {/* Export bar (Moved Below Top Grid) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border/80 bg-card p-4 sm:p-6">
