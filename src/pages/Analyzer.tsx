@@ -79,9 +79,9 @@ export default function Analyzer() {
 
   const [file, setFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState("");
-  const [company, setCompany] = useState("Stripe");
-  const [role, setRole] = useState("Senior Backend Engineer");
-  const [jd, setJd] = useState("We're hiring a Senior Backend Engineer to scale our payments platform. You'll design distributed services in Go and TypeScript, own SLOs, and partner with infra on multi-region rollouts. Strong systems fundamentals, observability mindset, and a bias for measurable impact.");
+  const [company, setCompany] = useState("Snowflake");
+  const [role, setRole] = useState("Senior Data Analyst");
+  const [jd, setJd] = useState("We are hiring a Senior Data Analyst to turn raw customer & product data into strategic growth insights. You will write high-performance SQL on Snowflake, build dbt data models, design executive Tableau dashboards, and drive A/B testing experimentation. Required: SQL, Python (Pandas/NumPy), Tableau, dbt, statistical modeling, data warehousing, and strong stakeholder storytelling.");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>(() => getHistory());
@@ -279,7 +279,7 @@ export default function Analyzer() {
                     </div>
                     <div className="space-y-2 min-w-0">
                       <Label htmlFor="role" className="text-sm font-medium text-foreground">Target role</Label>
-                      <Input id="role" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Senior Backend Engineer" value={role} onChange={e => setRole(e.target.value)} />
+                      <Input id="role" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Senior Data Analyst" value={role} onChange={e => setRole(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">

@@ -4,6 +4,17 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ScoreRing } from "@/components/analyzer/ScoreRing";
 
+const TRUSTED_COMPANIES = [
+  { name: "Stripe", domain: "stripe.com" },
+  { name: "Google", domain: "google.com" },
+  { name: "Airbnb", domain: "airbnb.com" },
+  { name: "Vercel", domain: "vercel.com" },
+  { name: "Notion", domain: "notion.so" },
+  { name: "Snowflake", domain: "snowflake.com" },
+  { name: "Figma", domain: "figma.com" },
+  { name: "Datadog", domain: "datadoghq.com" },
+];
+
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-background w-full">
@@ -139,10 +150,25 @@ export function Hero() {
 
         {/* Logo strip */}
         <div className="mt-16 md:mt-24 border-t border-border/40 pt-8">
-          <div className="text-center font-mono text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">trusted by candidates landing offers at</div>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 opacity-60">
-            {["STRIPE", "LINEAR", "VERCEL", "NOTION", "FIGMA", "AIRBNB", "DATADOG"].map(l => (
-              <div key={l} className="font-display text-sm font-bold tracking-widest sm:text-lg text-foreground">{l}</div>
+          <div className="text-center font-mono text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-6">
+            trusted by candidates landing offers at
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6">
+            {TRUSTED_COMPANIES.map(company => (
+              <div 
+                key={company.name} 
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/60 bg-card hover:border-accent/50 hover:bg-secondary/40 transition-all shadow-xs"
+              >
+                <img
+                  src={`https://img.logo.dev/${company.domain}?token=${import.meta.env.VITE_LOGO_DEV_TOKEN || "pk_fG5migPpQBeFfJyH8CoYvA"}`}
+                  alt={`${company.name} logo`}
+                  className="h-5 w-5 object-contain rounded-xs"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = "none";
+                  }}
+                />
+                <span className="text-xs font-semibold tracking-tight text-foreground font-display">{company.name}</span>
+              </div>
             ))}
           </div>
         </div>

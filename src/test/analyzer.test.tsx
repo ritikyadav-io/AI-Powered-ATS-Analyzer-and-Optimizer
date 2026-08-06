@@ -153,7 +153,7 @@ describe("Analyzer E2E Page Tests", () => {
     const companyInput = screen.getByPlaceholderText("e.g. Stripe");
     fireEvent.change(companyInput, { target: { value: "Google Cloud" } });
 
-    const roleInput = screen.getByPlaceholderText("e.g. Senior Backend Engineer");
+    const roleInput = screen.getByPlaceholderText("e.g. Senior Data Analyst");
     fireEvent.change(roleInput, { target: { value: "Senior Frontend Engineer" } });
 
     const jdTextarea = screen.getByPlaceholderText("Paste the job description…");

@@ -27,31 +27,31 @@ export const categoryScores = [
 
 export const sampleResume = {
   name: "Aarav Mehta",
-  title: "Senior Software Engineer",
+  title: "Senior Data Analyst",
   email: "aarav.mehta@email.com",
   location: "Bengaluru, IN · Remote",
-  skills: ["TypeScript", "React", "Node.js", "PostgreSQL", "AWS", "Kubernetes", "GraphQL", "Redis", "Python", "Terraform"],
+  skills: ["SQL (PostgreSQL, Snowflake)", "Python (Pandas, NumPy, Scikit-learn)", "Tableau", "Power BI", "dbt", "Statistical Modeling", "A/B Testing", "Excel / VBA", "Data Warehousing", "ETL Pipelines"],
   experience: [
-    { role: "Senior SWE", company: "Lumen Labs", period: "2022 — Present",
+    { role: "Senior Data Analyst", company: "DataPulse Analytics", period: "2022 — Present",
       bullets: [
-        "Led migration of legacy monolith to microservices, cutting p95 latency 38%.",
-        "Built design-system used by 14 product teams; adoption reached 92% in 6 months.",
-        "Mentored 5 engineers; 3 promoted within a year.",
+        "Engineered automated dbt & SQL data pipelines on 80M+ Snowflake records, accelerating executive reporting speed by 4x.",
+        "Designed & evaluated 25+ product A/B experiments, driving +14% checkout conversion & $1.8M incremental ARR.",
+        "Built executive Tableau & Power BI dashboards tracking retention cohorts, reducing customer churn by 18%.",
       ] },
-    { role: "Software Engineer", company: "Northwind", period: "2019 — 2022",
+    { role: "Data Analyst", company: "Northwind Insights", period: "2019 — 2022",
       bullets: [
-        "Owned billing platform processing $42M ARR with 99.99% uptime.",
-        "Reduced infra spend by $310K/yr via rightsizing and spot fleets.",
+        "Optimized complex PostgreSQL queries & indexing, cutting data warehouse cloud compute costs by $140K/year.",
+        "Developed predictive customer lifetime value (LTV) models in Python (Pandas/Scikit-learn) with 89% precision.",
       ] },
   ],
-  education: [{ school: "BITS Pilani", degree: "B.E. Computer Science", year: "2019" }],
-  projects: [{ name: "OpenLatency", desc: "OSS p99 monitor · 2.4k GitHub stars" }],
-  certifications: ["AWS Solutions Architect — Pro", "CKAD"],
+  education: [{ school: "BITS Pilani", degree: "B.E. Computer Science & Data Analytics", year: "2019" }],
+  projects: [{ name: "ChurnSense AI", desc: "Open-source Python customer churn & segmentation library · 1.8k GitHub stars" }],
+  certifications: ["Google Data Analytics Professional", "Snowflake SnowPro Core Certified", "dbt Certified Developer"],
 };
 
 export const rewriteImprovements = [
-  { type: "Power verb", before: "Helped migrate", after: "Spearheaded migration of" },
-  { type: "Quantify", before: "Improved performance", after: "Cut p95 latency by 38% (820ms → 510ms)" },
-  { type: "Keyword", before: "Worked with cloud", after: "Architected on AWS (EKS, Lambda, RDS)" },
-  { type: "Scope", before: "Managed team", after: "Led cross-functional team of 9 across 3 timezones" },
+  { type: "Quantify", before: "Analyzed customer data", after: "Segmented 500k+ customer profiles via K-Means clustering in Python, unlocking $320k upsell pipeline" },
+  { type: "Power verb", before: "Made reports for management", after: "Spearheaded C-suite executive Tableau dashboards tracking $42M ARR across 12 product lines" },
+  { type: "Keyword", before: "Ran database queries", after: "Optimized complex SQL window functions on 50M+ Snowflake records, cutting query cost 45%" },
+  { type: "Scope", before: "Helped team with analytics", after: "Led cross-functional analytics squad of 6 supporting Product, Growth, and Finance stakeholders" },
 ];
