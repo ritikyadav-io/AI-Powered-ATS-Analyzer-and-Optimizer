@@ -106,30 +106,29 @@ export default function Blog() {
   return (
     <SiteLayout>
       {activePost ? (
-        <section className="container px-4 sm:px-6 pt-10 pb-10 max-w-4xl mx-auto">
+        <section className="container px-4 sm:px-6 pt-6 pb-12 max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/40">
-            <h2 className="text-xl md:text-2xl font-display font-semibold text-foreground tracking-tight">Our Blog</h2>
             <button 
               onClick={() => setActivePost(null)}
-              className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors select-none"
+              className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors select-none font-semibold"
             >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back
+              <ArrowLeft className="h-4 w-4 text-accent" /> Back to all articles
             </button>
           </div>
           
           <article>
-            <header className="mb-10">
+            <header className="mb-8">
               <div className="flex items-center gap-3 text-xs font-mono uppercase tracking-wider text-muted-foreground font-semibold mb-4">
                 <span className="rounded bg-secondary px-2.5 py-0.5 text-foreground">{activePost.tag}</span>
                 <span>{activePost.date}</span>
                 <span>·</span>
                 <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {activePost.read}</span>
               </div>
-              <h1 className="display-lg text-foreground tracking-tight mb-6 leading-tight font-display">{activePost.title}</h1>
-              <p className="text-[17px] leading-relaxed text-muted-foreground italic font-light">{activePost.excerpt}</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground font-display leading-tight mb-4">{activePost.title}</h1>
+              <p className="text-base md:text-lg leading-relaxed text-muted-foreground italic font-light border-l-2 border-accent/40 pl-4 py-1">{activePost.excerpt}</p>
             </header>
             
-            <div className="space-y-8 text-[17px] md:text-[19px] leading-[1.8] text-foreground/90 font-normal">
+            <div className="space-y-6 text-base md:text-lg leading-[1.8] text-foreground/90 font-normal">
               {activePost.content.map((p, idx) => (
                 <p key={idx}>{p}</p>
               ))}
@@ -137,9 +136,11 @@ export default function Blog() {
           </article>
         </section>
       ) : (
-        <section className="container px-4 sm:px-6 pt-12 pb-16 max-w-7xl mx-auto">
-          <header className="mb-10 text-center">
-            <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground tracking-tight">Our Blog</h1>
+        <section className="container px-4 sm:px-6 pt-8 pb-14 max-w-7xl mx-auto">
+          <header className="mb-10 text-center max-w-3xl mx-auto space-y-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-accent font-mono">Engineering & Career Blueprints</div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground font-display">Resume Intelligence Insights</h1>
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">Tactical ATS guides, recruiter teardowns, and bullet-quantification blueprints for modern technical careers.</p>
           </header>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -153,20 +154,20 @@ export default function Blog() {
                 className="group flex flex-col justify-between rounded-xl border border-border/80 bg-card p-5 hover:border-accent/40 transition-colors"
               >
                 <div>
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-semibold mb-4">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-semibold mb-3">
                     <span className="rounded bg-secondary px-2 py-0.5 text-foreground">{p.tag}</span>
                     <span>{p.date}</span>
                     <span>·</span>
                     <span>{p.read}</span>
                   </div>
                   
-                  <h2 className="text-lg font-medium tracking-tight text-foreground group-hover:text-accent transition-colors cursor-pointer mb-2 leading-snug">
+                  <h2 className="text-lg font-bold tracking-tight text-foreground group-hover:text-accent transition-colors cursor-pointer mb-2 leading-snug font-display">
                     <button onClick={() => setActivePost(p)} className="text-left font-display">
                       {p.title}
                     </button>
                   </h2>
                   
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">{p.excerpt}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3">{p.excerpt}</p>
                 </div>
                 
                 <button 

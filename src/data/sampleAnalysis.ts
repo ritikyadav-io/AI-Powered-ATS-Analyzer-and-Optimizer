@@ -12,7 +12,7 @@ export const moduleDefs = [
   { id: "achievement", name: "Achievement Strength", icon: "Trophy", desc: "STAR-method completeness", score: 70, weight: "High" },
   { id: "redflags", name: "Red Flags Detector", icon: "AlertTriangle", desc: "Gaps, hops, vague claims", score: 86, weight: "Medium" },
   { id: "rewrite", name: "Experience Rewriter", icon: "Wand2", desc: "Bullet-by-bullet AI rewrite", score: 0, weight: "Action" },
-  { id: "linkedin", name: "LinkedIn Summary", icon: "Linkedin", desc: "First-person magnetic summary", score: 0, weight: "Action" },
+  { id: "mitReview", name: "MIT Executive Review", icon: "GraduationCap", desc: "100-year senior MIT professor & FAANG hiring manager final audit node", score: 98, weight: "Master" },
   { id: "cover", name: "Cover Letter Generator", icon: "Mail", desc: "Tailored to JD + company tone", score: 0, weight: "Action" },
 ] as const;
 

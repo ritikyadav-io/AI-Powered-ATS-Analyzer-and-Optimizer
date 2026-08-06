@@ -45,9 +45,10 @@ export default function Pricing() {
   return (
     <SiteLayout>
       <section className="container py-8 md:py-12 max-w-5xl mx-auto">
-        <div className="text-center mb-10 sm:mb-14">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">Simple, transparent pricing.</h1>
-          <p className="text-[15px] sm:text-base text-muted-foreground">Unlock the full power of the 15-node ATS pipeline to land more interviews.</p>
+        <div className="text-center mb-10 sm:mb-14 max-w-3xl mx-auto space-y-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-accent font-mono">100% Risk-Free Application Guarantee</div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground font-display">Simple, transparent pricing</h1>
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">Unlock full access to the 15-node ATS analysis engine, MIT Executive Review, and PDF report exports.</p>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {tiers.map((t, i) => (

@@ -118,7 +118,7 @@ describe("Analyzer E2E Page Tests", () => {
         rewrites: [
           { type: "Metrics", before: "Wrote backend endpoints", after: "Engineered scalable Go backend endpoints, serving 2M+ active request transactions with 50ms latency." }
         ],
-        linkedinSummary: "Highly energetic senior software engineering lead specialized in TypeScript systems...",
+        mitMasterAudit: "MIT Executive Master Audit: Senior candidate demonstrating outstanding architecture, quantified bullet impact, and high ATS compliance.",
         coverLetter: "Dear Google Cloud Hiring Team, I am extremely thrilled to apply..."
       },
       error: null

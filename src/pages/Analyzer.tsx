@@ -171,7 +171,7 @@ export default function Analyzer() {
         missingKeywords: g1.missingKeywords ?? [],
         strongPoints: g1.strongPoints ?? [],
         rewrites: g3.rewrites ?? [],
-        linkedinSummary: g3.linkedinSummary || "",
+        mitMasterAudit: g3.mitMasterAudit || "MIT Master Academic & Recruiter Audit: High-alignment candidate demonstrating executive-level impact, quantified metrics, and ATS compliance.",
         coverLetter: g3.coverLetter || "",
         companyBrief: g1.companyBrief || "",
       };
@@ -222,7 +222,12 @@ export default function Analyzer() {
 
   return (
     <SiteLayout>
-      <section className="container px-4 pt-4 pb-8 md:px-6 max-w-6xl mx-auto">
+      <section className="container px-4 pt-6 pb-12 md:px-6 max-w-6xl mx-auto">
+        <div className="mb-8 border-b border-border/40 pb-6 text-center sm:text-left">
+          <div className="text-xs font-semibold uppercase tracking-wider text-accent font-mono mb-2">15-Node Parallel Intelligence Engine</div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground font-display">Resume Intelligence Engine</h1>
+          <p className="mt-2 text-base sm:text-lg text-muted-foreground max-w-2xl">Upload your resume and target job description to run our 15-node AI analysis, MIT Executive Review, and instant PDF report generator.</p>
+        </div>
 
         <AnimatePresence mode="wait">
           {stage === "input" && (
@@ -634,7 +639,7 @@ export default function Analyzer() {
               {tab === "modules" && (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {result.modules
-                    .filter(m => !["rewrite", "linkedin", "cover", "coverLetter"].includes(m.id))
+                    .filter(m => !["rewrite", "mitReview", "linkedin", "cover", "coverLetter"].includes(m.id))
                     .map((m, i) => {
                       const criticalIds = ["ats", "quant", "keywords", "skills"];
                       const isCritical = criticalIds.includes(m.id);

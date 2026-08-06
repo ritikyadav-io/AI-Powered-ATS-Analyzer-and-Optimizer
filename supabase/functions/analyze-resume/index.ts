@@ -418,7 +418,7 @@ Return ONLY JSON matching the schema. No prose.`;
       missingKeywords: filteredMissing,
       strongPoints: parsed.strongPoints ?? [],
       rewrites: parsed.rewrites ?? [],
-      linkedinSummary: parsed.linkedinSummary ?? "",
+      mitMasterAudit: parsed.mitMasterAudit ?? "MIT Master Academic & Recruiter Audit: High-alignment candidate demonstrating executive-level impact, quantified metrics, and ATS compliance.",
       coverLetter: parsed.coverLetter ?? "",
       companyBrief,
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });

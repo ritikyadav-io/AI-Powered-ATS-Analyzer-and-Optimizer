@@ -15,6 +15,7 @@ export type AnalysisReport = {
   rewrites: { type: string; before: string; after: string }[];
 
   coverLetter: string;
+  mitMasterAudit?: string;
   companyBrief?: string;
   chanceOfInterviewing?: string;
   coldEmail?: string;
