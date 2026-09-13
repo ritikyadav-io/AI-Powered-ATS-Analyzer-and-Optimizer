@@ -9,15 +9,11 @@ import { Link } from "react-router-dom";
 export default function Contact() {
   return (
     <SiteLayout>
-      <section className="container pt-8 pb-12 max-w-5xl mx-auto">
-        <div className="mb-10 text-center max-w-2xl mx-auto space-y-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-accent font-mono">24/7 Priority Support</div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground font-display">Get in touch</h1>
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">Sales, support, enterprise licensing, or candidate audits — we read every message and respond within 2 hours.</p>
-        </div>
+      <section className="container pt-4 pb-4 max-w-5xl mx-auto">
         <div className="grid gap-8 lg:grid-cols-2">
           <div>
-            <div className="space-y-4">
+            <p className="text-sm leading-relaxed text-muted-foreground mb-6">Sales, support, careers, or just to say hello — we read every message.</p>
+            <div className="mt-6 space-y-4">
               {[
                 { icon: Mail, label: "Email", value: "hello@elevatecv.app" },
                 { icon: MessageSquare, label: "Support", value: "Mon–Fri · within 4h" },

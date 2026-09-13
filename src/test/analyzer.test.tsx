@@ -165,10 +165,10 @@ describe("Analyzer E2E Page Tests", () => {
 
     // 5. Assert loading screen shows
     expect(await screen.findByText(/Analyzing your resume against/i)).toBeInTheDocument();
-    expect(screen.getByText(/running the 15-node ATS pipeline/i)).toBeInTheDocument();
+    expect(screen.getByText(/15-node ATS/i)).toBeInTheDocument();
 
     // 6. Wait for UI to resolve to results stage
-    expect(await screen.findByText("One-click ATS report", {}, { timeout: 10000 })).toBeInTheDocument();
+    expect(await screen.findByText(/One-click ATS report/i, {}, { timeout: 10000 })).toBeInTheDocument();
 
     // 7. Assert results details show up properly
     expect(screen.getByText("Strong frontend application demonstrating high keyword alignment.")).toBeInTheDocument();

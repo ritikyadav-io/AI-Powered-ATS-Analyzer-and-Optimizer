@@ -136,11 +136,9 @@ export default function Blog() {
           </article>
         </section>
       ) : (
-        <section className="container px-4 sm:px-6 pt-8 pb-14 max-w-7xl mx-auto">
-          <header className="mb-10 text-center max-w-3xl mx-auto space-y-3">
-            <div className="text-xs font-semibold uppercase tracking-wider text-accent font-mono">Engineering & Career Blueprints</div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground font-display">Resume Intelligence Insights</h1>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">Tactical ATS guides, recruiter teardowns, and bullet-quantification blueprints for modern technical careers.</p>
+        <section className="container px-4 sm:px-6 pt-12 pb-16 max-w-7xl mx-auto">
+          <header className="mb-10 text-center">
+            <h1 className="text-4xl md:text-5xl font-display font-semibold text-foreground tracking-tight">Our Blog</h1>
           </header>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

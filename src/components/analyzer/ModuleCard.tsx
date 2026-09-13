@@ -83,14 +83,29 @@ export function ModuleCard({ name, desc, icon, score, weight, index, reason, fin
             
             {findings && findings.length > 0 && (
               <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Findings</div>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Line-by-Line Findings</div>
                 <ul className="space-y-1 text-[10px] text-muted-foreground leading-normal">
-                  {(expanded ? findings : findings.slice(0, 2)).map((f, idx) => (
-                    <li key={idx} className="flex items-start gap-1">
-                      <span className="text-destructive font-semibold">•</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
+                  {(expanded ? findings : findings.slice(0, 2)).map((f, idx) => {
+                    const isRemove = f.toUpperCase().startsWith("REMOVE:");
+                    const isAdd = f.toUpperCase().startsWith("ADD:");
+                    const isRewrite = f.toUpperCase().startsWith("REWRITE:");
+                    const cleanText = f.replace(/^(REMOVE|ADD|REWRITE):\s*/i, "");
+
+                    return (
+                      <li key={idx} className="flex items-start gap-1.5 py-0.5">
+                        {isRemove ? (
+                          <span className="shrink-0 bg-destructive/15 text-destructive font-mono font-bold px-1 rounded text-[8px] uppercase">REMOVE</span>
+                        ) : isAdd ? (
+                          <span className="shrink-0 bg-primary/15 text-primary font-mono font-bold px-1 rounded text-[8px] uppercase">ADD</span>
+                        ) : isRewrite ? (
+                          <span className="shrink-0 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono font-bold px-1 rounded text-[8px] uppercase">REWRITE</span>
+                        ) : (
+                          <span className="text-destructive font-semibold">•</span>
+                        )}
+                        <span className="text-foreground/90 font-medium">{cleanText}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

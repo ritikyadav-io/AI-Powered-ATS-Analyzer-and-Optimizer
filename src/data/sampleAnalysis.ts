@@ -26,27 +26,60 @@ export const categoryScores = [
 ];
 
 export const sampleResume = {
-  name: "Aarav Mehta",
-  title: "Senior Software Engineer",
-  email: "aarav.mehta@email.com",
-  location: "Bengaluru, IN · Remote",
-  skills: ["TypeScript", "React", "Node.js", "PostgreSQL", "AWS", "Kubernetes", "GraphQL", "Redis", "Python", "Terraform"],
+  name: "Ritik Yadav",
+  title: "B.Tech Artificial Intelligence and Data Science Student",
+  email: "yadavritik2027@gmail.com",
+  phone: "+91-8824318839",
+  location: "Jaipur, 302039",
+  linkedin: "linkedin.com/in/ritikyadav18",
+  github: "github.com/ritikyadav-io",
+  skills: ["Python", "SQL", "HTML/CSS", "REST API", "AWS (S3, Lambda, Redshift, Glue, QuickSight)", "Power BI", "MySQL", "Amazon RDS", "Supabase", "Machine Learning"],
   experience: [
-    { role: "Senior SWE", company: "Lumen Labs", period: "2022 — Present",
+    {
+      role: "AWS Data Engineer Intern",
+      company: "Graas Solutions",
+      period: "May 2026 — Jul 2026",
+      location: "Jaipur, India",
       bullets: [
-        "Led migration of legacy monolith to microservices, cutting p95 latency 38%.",
-        "Built design-system used by 14 product teams; adoption reached 92% in 6 months.",
-        "Mentored 5 engineers; 3 promoted within a year.",
-      ] },
-    { role: "Software Engineer", company: "Northwind", period: "2019 — 2022",
+        "Architected automated reporting dashboards using SQL, Python, and AWS Lambda, transitioning manual reports to real-time BI analytics and reducing reporting prep by 35%.",
+        "Optimized complex SQL queries and ETL pipelines using AWS Glue and Redshift, accelerating data compilation speed by 25% and ensuring 99.9% data reliability.",
+        "Automated multi-source data ingestion pipelines using AWS Lambda and S3, processing 500GB+ of raw data monthly into clean, structured schemas for downstream analytics."
+      ]
+    },
+    {
+      role: "Full Stack Developer Intern",
+      company: "Groot Software",
+      period: "May 2025 — Jul 2025",
+      location: "Jaipur, India",
       bullets: [
-        "Owned billing platform processing $42M ARR with 99.99% uptime.",
-        "Reduced infra spend by $310K/yr via rightsizing and spot fleets.",
-      ] },
+        "Built and deployed responsive web applications using HTML, CSS, JavaScript, and REST APIs, improving page load speed by 20% across desktop and mobile.",
+        "Engineered full-stack features, debugged complex component layouts, and collaborated with senior developers using Git version control in an agile workflow."
+      ]
+    }
   ],
-  education: [{ school: "BITS Pilani", degree: "B.E. Computer Science", year: "2019" }],
-  projects: [{ name: "OpenLatency", desc: "OSS p99 monitor · 2.4k GitHub stars" }],
-  certifications: ["AWS Solutions Architect — Pro", "CKAD"],
+  education: [
+    {
+      school: "Arya College of Engineering and IT (RTU Affiliated), Jaipur",
+      degree: "B.Tech – Artificial Intelligence and Data Science",
+      year: "2023 — 2027",
+      coursework: "Data Structures and Algorithms (DSA), Operating Systems (OS), Database Management Systems (DBMS), Machine Learning (ML), Cloud Computing (CC)"
+    }
+  ],
+  projects: [
+    {
+      name: "Trail – Job Platforms Pipeline | Graas Solutions (P) Ltd",
+      desc: "Built a full-stack job pipeline platform aggregating listings from multiple job portals onto a single dashboard. Used AI to generate per-listing JD summaries, cold emails, and direct apply filters."
+    },
+    {
+      name: "ElevateCv – ATS Tracking & Resume Audit Tool",
+      desc: "Built an AI-powered ATS tracking tool with a 15-node evaluation pipeline checking power verbs, keyword density, and formatting to deliver actionable score reports."
+    }
+  ],
+  certifications: [
+    "Java Programming Professional Certification → IIT Bombay (2024)",
+    "HubSpot Data Integration Certificate → HubSpot Academy (2025)",
+    "Technical Automation Proficiency → Cursor, Lovable, Claude, ChatGPT for Data Pipeline Development"
+  ]
 };
 
 export const rewriteImprovements = [

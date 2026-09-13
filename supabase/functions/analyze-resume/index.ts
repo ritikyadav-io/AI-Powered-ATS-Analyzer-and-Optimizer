@@ -15,16 +15,17 @@ You think like a hiring manager who screens 400 resumes a day: skeptical, precis
 You score STRICTLY based on the ACTUAL resume text provided vs the ACTUAL job description provided. Nothing is assumed.
 
 HARD RULES (never break):
-1. NEVER return placeholder, generic or fabricated content. Every finding must cite something concrete from the resume (e.g. a specific bullet, a missing metric, a weak verb, a broken section).
-2. Score honestly and harshly. A typical resume with no metrics and generic verbs should NOT exceed 55 overall. To score 90+ the resume must have: JD keyword coverage >= 85%, every experience bullet quantified with numbers/%/$/time, strong action verbs, clear STAR structure, no formatting risk, tight one-page-per-decade rule.
-3. "missingKeywords" MUST contain ONLY exact keywords / phrases that literally appear in the job description text but do NOT appear (case-insensitive substring) in the resume text. Do NOT invent skills. If the JD mentions "Kubernetes" and the resume mentions "K8s", still flag it only if the JD literally uses that word. If none are truly missing, return an empty array.
-4. Every "findings" is an array of 3-5 short bullets (max 16 words each). No prose.
-5. Every "recommendations" is an array of 3-5 copy-pasteable fixes with EXACT wording the candidate can drop in.
-6. "reason" is ONE precise sentence justifying the score with evidence.
-7. Rewrites must be first-person, human, specific — no AI clichés ("leveraged synergies", "spearheaded initiatives", "results-driven professional"), no filler, follow STAR + numbers.
-8. Cover letter: 160-220 words, addressed to the company, references 2-3 real projects from the resume, no generic openers.
-9. LinkedIn summary: first-person, 4 short paragraphs, natural voice.
-10. If the resume is thin, dishonest, or clearly unfit — say so in the verdict. Never inflate.
+1. NEVER return placeholder, generic or fabricated content. Every finding must cite something concrete from the resume.
+2. In "modules", findings MUST be extremely explicit line-level instructions in the format:
+   - "REMOVE: '<exact weak or filler line from candidate resume>'"
+   - "ADD: '<missing critical skill or target metric requirement from JD>'"
+   - "REWRITE: '<exact line from candidate resume>' -> '<quantified STAR version with metrics & JD keywords>'"
+3. "recommendations" MUST contain copy-pasteable exact replacements that the candidate can drop into their resume directly.
+4. "candidate" MUST extract the ACTUAL candidate's name, email, phone, location, linkedin, title, topSkills, experience entries, education entries, and projects directly from the resume text provided. Never invent fake companies if real ones are present.
+5. "rewrites" MUST take 4 to 6 REAL bullets from the candidate's actual resume and upgrade them into STAR + metrics + JD keywords.
+6. Cover letter: 160-220 words, addressed to the company, references 2-3 real projects from the resume, no generic openers.
+7. If the resume is thin, dishonest, or clearly unfit — say so in the verdict. Never inflate.
+8. Write all generated text, findings, and rewrites in natural professional English (Sentence case: Capitalize the first letter of each sentence, keep technical acronyms uppercase like AWS, SQL, REST API, Python, and write clean, readable prose without artificial character gaps or weird spacing).
 
 You are a heart-of-the-report ATS machine. Every module must add specific, non-obvious signal — never repeat the same generic advice across modules.`;
 
@@ -97,7 +98,48 @@ function buildSchema() {
         properties: {
           name: { type: "string" },
           title: { type: "string" },
+          email: { type: "string" },
+          phone: { type: "string" },
+          location: { type: "string" },
+          linkedin: { type: "string" },
           topSkills: { type: "array", items: { type: "string" } },
+          experience: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                role: { type: "string" },
+                company: { type: "string" },
+                period: { type: "string" },
+                location: { type: "string" },
+                bullets: { type: "array", items: { type: "string" } },
+              },
+              required: ["role", "company", "period", "bullets"],
+            },
+          },
+          education: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                school: { type: "string" },
+                degree: { type: "string" },
+                year: { type: "string" },
+              },
+              required: ["school", "degree", "year"],
+            },
+          },
+          projects: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                desc: { type: "string" },
+              },
+              required: ["name", "desc"],
+            },
+          },
         },
         required: ["name", "title", "topSkills"],
       },
