@@ -60,28 +60,55 @@ export type AnalysisReport = {
 
 export function filterGenuineKeywords(keywords: string[]): string[] {
   if (!Array.isArray(keywords)) return [];
-  const junkPhrases = new Set([
-    "working on", "working with", "experience with", "ability to", "bias for",
-    "strong background", "responsible for", "hands on", "hands-on", "knowledge of",
-    "understanding of", "familiar with", "track record", "collaborate with",
-    "team player", "good communication", "fast paced", "fast-paced", "high volume",
-    "day to day", "day-to-day", "self starter", "self-starter", "drive results",
-    "years of experience", "proven track record", "passionate about", "role at",
-    "building scalable", "working in", "comfortable with", "deep understanding",
-    "must have", "nice to have", "looking for", "ideal candidate", "team orientation",
-    "strong communication", "written and verbal", "fast learner", "detail oriented",
-    "detail-oriented", "problem solver", "problem-solving"
+
+  const stopWords = new Set([
+    "with", "for", "our", "your", "the", "and", "that", "this", "from", "into",
+    "over", "under", "about", "above", "across", "after", "again", "against",
+    "along", "among", "around", "before", "behind", "below", "beneath", "beside",
+    "between", "beyond", "during", "inside", "outside", "through", "throughout",
+    "toward", "towards", "underneath", "until", "within", "without", "our", "all"
+  ]);
+
+  const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed)\b/i;
+
+  const junkKeywords = new Set([
+    "partner with infra", "multi-region rollouts", "systems fundamentals", "observability mindset",
+    "payments platform", "scale our payments platform", "design distributed services", "own slos",
+    "working on", "working with", "experience with", "ability to", "bias for", "strong background",
+    "responsible for", "hands on", "hands-on", "knowledge of", "understanding of", "familiar with",
+    "track record", "collaborate with", "team player", "good communication", "fast paced",
+    "fast-paced", "high volume", "day to day", "day-to-day", "self starter", "self-starter",
+    "drive results", "years of experience", "proven track record", "passionate about", "role at",
+    "building scalable", "working in", "comfortable with", "deep understanding", "must have",
+    "nice to have", "looking for", "ideal candidate", "team orientation", "strong communication",
+    "written and verbal", "fast learner", "detail oriented", "detail-oriented", "problem solver"
   ]);
 
   return keywords
     .map(k => (typeof k === "string" ? k.trim() : ""))
     .filter(k => {
-      if (!k || k.length < 2 || k.length > 40) return false;
+      if (!k || k.length < 2 || k.length > 28) return false;
       const lower = k.toLowerCase();
-      if (junkPhrases.has(lower)) return false;
-      if (/^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|building|driving|managing|handling|using|creating)\b/i.test(lower)) {
+      if (junkKeywords.has(lower)) return false;
+
+      const words = k.split(/\s+/);
+      // Genuine skills are typically 1, 2, or max 3 concise words (e.g., "Go", "AWS", "REST API", "PostgreSQL")
+      if (words.length > 3) return false;
+
+      if (verbPhrases.test(lower)) return false;
+
+      // Reject strings starting or ending with English prepositions/pronouns
+      if (stopWords.has(words[0].toLowerCase()) || stopWords.has(words[words.length - 1].toLowerCase())) {
         return false;
       }
+
+      // Reject generic JD descriptive terms unless specific tech
+      if (/\b(partner|scale|design|own|rollouts|mindset|platform|fundamentals|environment|experience|services)\b/i.test(lower)) {
+        if (/\b(partner with|scale our|own slos|observability mindset|systems fundamentals|multi-region|distributed services|payments platform)\b/i.test(lower)) {
+          return false;
+        }
+      }
+
       return true;
     });
 }

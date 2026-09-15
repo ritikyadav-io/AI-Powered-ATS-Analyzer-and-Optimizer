@@ -1,4 +1,6 @@
-export const RECRUITER_QUOTES = [
+import { RESUME_TRICKS } from "./resumeTricks";
+
+const BASE_QUOTES = [
   "75% of resumes are rejected by ATS algorithms before a human recruiter ever sees them.",
   "Recruiters spend an average of 6 to 7 seconds on an initial resume scan before making a keep or reject decision.",
   "Unquantified bullets like 'responsible for' or 'helped with' get flagged as low-impact by hiring algorithms.",
@@ -71,4 +73,9 @@ export const RECRUITER_QUOTES = [
   "High-impact power verbs ('Architected', 'Spearheaded', 'Automated') command immediate recruiter respect.",
   "Combining an audited ATS resume with a targeted LinkedIn outreach message accelerates interview scheduling.",
   "ElevateCv's 15-node AI audit guarantees your resume is 100% parse-ready for top FAANG and unicorn screeners!"
+];
+
+export const RECRUITER_QUOTES = [
+  ...BASE_QUOTES,
+  ...RESUME_TRICKS.map(t => `${t.title}: ${t.actionableTip}${t.formula ? ` Formula: ${t.formula}` : ""}`)
 ];

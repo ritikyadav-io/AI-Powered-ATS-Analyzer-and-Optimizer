@@ -477,27 +477,36 @@ Return ONLY JSON matching the schema. No prose.`;
     const resumeCorpus = ((resumeText || "") + " " + (resumeName || "")).toLowerCase();
     const jdLower = (jobDescription || "").toLowerCase();
     const rawKeywords: string[] = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : [];
+    const stopWords = new Set(["with", "for", "our", "your", "the", "and", "that", "this", "from", "into", "over", "under", "about", "above", "across", "after", "again", "against", "along", "among", "around", "before", "behind", "below", "beneath", "beside", "between", "beyond", "during", "inside", "outside", "through", "throughout", "toward", "towards", "underneath", "until", "within", "without", "our", "all"]);
+    const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed)\b/i;
+
     const junkPhrases = new Set([
-      "working on", "working with", "experience with", "ability to", "bias for",
-      "strong background", "responsible for", "hands on", "hands-on", "knowledge of",
-      "understanding of", "familiar with", "track record", "collaborate with",
-      "team player", "good communication", "fast paced", "fast-paced", "high volume",
-      "day to day", "day-to-day", "self starter", "self-starter", "drive results",
-      "years of experience", "proven track record", "passionate about", "role at",
-      "building scalable", "working in", "comfortable with", "deep understanding",
-      "must have", "nice to have", "looking for", "ideal candidate", "team orientation",
-      "strong communication", "written and verbal", "fast learner", "detail oriented",
-      "detail-oriented", "problem solver", "problem-solving"
+      "partner with infra", "multi-region rollouts", "systems fundamentals", "observability mindset",
+      "payments platform", "scale our payments platform", "design distributed services", "own slos",
+      "working on", "working with", "experience with", "ability to", "bias for", "strong background",
+      "responsible for", "hands on", "hands-on", "knowledge of", "understanding of", "familiar with",
+      "track record", "collaborate with", "team player", "good communication", "fast paced",
+      "fast-paced", "high volume", "day to day", "day-to-day", "self starter", "self-starter",
+      "drive results", "years of experience", "proven track record", "passionate about", "role at",
+      "building scalable", "working in", "comfortable with", "deep understanding", "must have",
+      "nice to have", "looking for", "ideal candidate", "team orientation", "strong communication",
+      "written and verbal", "fast learner", "detail oriented", "detail-oriented", "problem solver", "problem-solving"
     ]);
 
     const filteredMissing = Array.from(new Set(
       rawKeywords
         .map((k) => String(k).trim())
-        .filter((k) => k.length > 1 && k.length < 50)
+        .filter((k) => k.length >= 2 && k.length <= 28)
         .filter((k) => {
           const l = k.toLowerCase();
           if (junkPhrases.has(l)) return false;
-          if (/^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|building|driving|managing|handling|using|creating)\b/i.test(l)) return false;
+          const words = k.split(/\s+/);
+          if (words.length > 3) return false;
+          if (verbPhrases.test(l)) return false;
+          if (stopWords.has(words[0].toLowerCase()) || stopWords.has(words[words.length - 1].toLowerCase())) return false;
+          if (/\b(partner|scale|design|own|rollouts|mindset|platform|fundamentals|environment|experience|services)\b/i.test(l)) {
+            if (/\b(partner with|scale our|own slos|observability mindset|systems fundamentals|multi-region|distributed services|payments platform)\b/i.test(l)) return false;
+          }
           return true;
         })
         .filter((k) => jdLower.includes(k.toLowerCase()))
