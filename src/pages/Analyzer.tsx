@@ -310,12 +310,6 @@ export default function Analyzer() {
               <div className="space-y-6 min-w-0 w-full">
                 <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-1">
                   <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">step 1 · resume</div>
-                  <button
-                    onClick={() => setShowTricksModal(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-[11px] font-mono font-semibold text-accent hover:bg-accent/20 transition-all shadow-2xs"
-                  >
-                    <Sparkles className="h-3 w-3" /> 50+ Recruiter Tricks Blueprint
-                  </button>
                 </div>
                 <UploadZone onFile={setFile} />
                 {error && (
@@ -646,8 +640,8 @@ export default function Analyzer() {
                     <p className="text-xs text-muted-foreground mt-0.5">Identified in the JD but missing from your resume</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5 flex-1 content-start">
-                    {result.missingKeywords.length > 0 ? (
-                      result.missingKeywords.map(k => (
+                    {filterGenuineKeywords(result.missingKeywords).length > 0 ? (
+                      filterGenuineKeywords(result.missingKeywords).map(k => (
                         <span key={k} className="rounded-md border border-destructive/20 bg-destructive/10 px-2.5 py-1 font-mono text-[11px] text-destructive">{k}</span>
                       ))
                     ) : (
