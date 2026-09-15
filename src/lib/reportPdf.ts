@@ -72,10 +72,13 @@ export function filterGenuineKeywords(keywords: string[]): string[] {
     "toward", "towards", "underneath", "until", "within", "without", "our", "all",
     "must", "have", "need", "should", "ability", "experience", "mindset", "fundamentals",
     "impact", "rollouts", "services", "platform", "platforms", "solutions", "environment",
-    "practices", "skills", "knowledge", "understanding", "familiarity"
+    "practices", "skills", "knowledge", "understanding", "familiarity", "hiring", "hire",
+    "hired", "recruiter", "recruiting", "recruitment", "job", "jobs", "career", "careers",
+    "role", "roles", "position", "positions", "candidate", "candidates", "company", "companies",
+    "opportunity", "opportunities", "opening", "openings", "manager", "management"
   ]);
 
-  const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed|measurable|multi-region|distributed|systems)\b/i;
+  const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed|measurable|multi-region|distributed|systems|hiring|hired|hire|recruiting)\b/i;
 
   const genericEnglishNouns = new Set([
     "distributed services", "observability mindset", "systems fundamentals", "measurable impact",
@@ -91,7 +94,8 @@ export function filterGenuineKeywords(keywords: string[]): string[] {
     "fast learner", "detail oriented", "detail-oriented", "problem solver", "problem-solving",
     "high availability", "production systems", "team collaboration", "agile environment",
     "best practices", "code quality", "peer review", "system design", "distributed systems",
-    "technical leadership", "engineering culture", "product delivery", "continuous improvement"
+    "technical leadership", "engineering culture", "product delivery", "continuous improvement",
+    "hiring partner", "hiring manager", "open role", "target role", "job opening", "career opportunity"
   ]);
 
   return keywords
@@ -120,16 +124,16 @@ export function filterGenuineKeywords(keywords: string[]): string[] {
         return false;
       }
 
-      // If a 2-word phrase contains generic non-tech nouns like "mindset", "fundamentals", "impact", "rollouts", "services", "platform", "environment", "practices", "culture", REJECT!
+      // If a 2-word phrase contains generic non-tech nouns, REJECT!
       if (words.length === 2) {
-        if (/\b(services|mindset|fundamentals|impact|rollouts|platform|environment|practices|culture|strategy|delivery|ownership|partner|infra|infrastructure|systems|architecture|management|leadership|collaboration|team)\b/i.test(lower)) {
+        if (/\b(services|mindset|fundamentals|impact|rollouts|platform|environment|practices|culture|strategy|delivery|ownership|partner|infra|infrastructure|systems|architecture|management|leadership|collaboration|team|hiring|hire|hired|recruiter|recruiting|recruitment|job|jobs|career|careers|role|roles|position|positions|candidate|candidates|company|companies|opportunity|opportunities|opening|openings|manager)\b/i.test(lower)) {
           return false;
         }
       }
 
       // If single word, check if it's a generic English noun
       if (words.length === 1) {
-        if (/\b(services|mindset|fundamentals|impact|rollouts|platform|environment|practices|culture|strategy|delivery|ownership|partner|infra|infrastructure|architecture|management|leadership|collaboration|team|work|code|system|systems)\b/i.test(lower)) {
+        if (/\b(services|mindset|fundamentals|impact|rollouts|platform|environment|practices|culture|strategy|delivery|ownership|partner|infra|infrastructure|architecture|management|leadership|collaboration|team|work|code|system|systems|hiring|hire|hired|recruiter|recruiting|recruitment|job|jobs|career|careers|role|roles|position|positions|candidate|candidates|company|companies|opportunity|opportunities|opening|openings|manager)\b/i.test(lower)) {
           return false;
         }
       }

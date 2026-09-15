@@ -478,8 +478,8 @@ Return ONLY JSON matching the schema. No prose.`;
     const resumeCorpus = ((resumeText || "") + " " + (resumeName || "")).toLowerCase();
     const jdLower = (jobDescription || "").toLowerCase();
     const rawKeywords: string[] = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : [];
-    const stopWords = new Set(["with", "for", "our", "your", "the", "and", "that", "this", "from", "into", "over", "under", "about", "above", "across", "after", "again", "against", "along", "among", "around", "before", "behind", "below", "beneath", "beside", "between", "beyond", "during", "inside", "outside", "through", "throughout", "toward", "towards", "underneath", "until", "within", "without", "our", "all"]);
-    const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed)\b/i;
+    const stopWords = new Set(["with", "for", "our", "your", "the", "and", "that", "this", "from", "into", "over", "under", "about", "above", "across", "after", "again", "against", "along", "among", "around", "before", "behind", "below", "beneath", "beside", "between", "beyond", "during", "inside", "outside", "through", "throughout", "toward", "towards", "underneath", "until", "within", "without", "our", "all", "hiring", "hire", "hired", "recruiter", "recruiting", "recruitment", "job", "jobs", "career", "careers", "role", "roles", "position", "positions", "candidate", "candidates", "company", "companies", "opportunity", "opportunities", "opening", "openings", "manager", "management"]);
+    const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed|hiring|hired|hire|recruiting)\b/i;
 
     const junkPhrases = new Set([
       "partner with infra", "multi-region rollouts", "systems fundamentals", "observability mindset",
@@ -491,7 +491,8 @@ Return ONLY JSON matching the schema. No prose.`;
       "drive results", "years of experience", "proven track record", "passionate about", "role at",
       "building scalable", "working in", "comfortable with", "deep understanding", "must have",
       "nice to have", "looking for", "ideal candidate", "team orientation", "strong communication",
-      "written and verbal", "fast learner", "detail oriented", "detail-oriented", "problem solver", "problem-solving"
+      "written and verbal", "fast learner", "detail oriented", "detail-oriented", "problem solver", "problem-solving",
+      "hiring partner", "hiring manager", "open role", "target role", "job opening", "career opportunity"
     ]);
 
     const filteredMissing = Array.from(new Set(
@@ -502,11 +503,11 @@ Return ONLY JSON matching the schema. No prose.`;
           const l = k.toLowerCase();
           if (junkPhrases.has(l)) return false;
           const words = k.split(/\s+/);
-          if (words.length > 3) return false;
+          if (words.length > 2) return false;
           if (verbPhrases.test(l)) return false;
           if (stopWords.has(words[0].toLowerCase()) || stopWords.has(words[words.length - 1].toLowerCase())) return false;
-          if (/\b(partner|scale|design|own|rollouts|mindset|platform|fundamentals|environment|experience|services)\b/i.test(l)) {
-            if (/\b(partner with|scale our|own slos|observability mindset|systems fundamentals|multi-region|distributed services|payments platform)\b/i.test(l)) return false;
+          if (/\b(partner|scale|design|own|rollouts|mindset|platform|fundamentals|environment|experience|services|hiring|hire|hired|recruiter|recruiting|job|jobs|career|role|position|candidate|manager)\b/i.test(l)) {
+            if (/\b(partner with|scale our|own slos|observability mindset|systems fundamentals|multi-region|distributed services|payments platform|hiring partner|hiring manager)\b/i.test(l)) return false;
           }
           return true;
         })
