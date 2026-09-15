@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { buildAnalysisPdf, buildCoverLetterPdf, buildImprovedResumePdf, generateLatexResume, generateWordResumeHtml, filterGenuineKeywords, AnalysisReport, enhanceBullet, enhanceSummary } from "@/lib/reportPdf";
 import { RECRUITER_QUOTES } from "@/data/recruiterQuotes";
+import { ResumeTricksModal } from "@/components/analyzer/ResumeTricksModal";
 import { getHistory, saveHistory, removeHistory, HistoryEntry } from "@/lib/historyStore";
 import { Pencil, Check, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -93,17 +94,18 @@ export default function Analyzer() {
   const [perfMetrics, setPerfMetrics] = useState<any>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [showLatexCode, setShowLatexCode] = useState(false);
+  const [showTricksModal, setShowTricksModal] = useState(false);
 
   const [pendingResult, setPendingResult] = useState<{ report: AnalysisResult; perf: any } | null>(null);
   const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * RECRUITER_QUOTES.length));
 
-  // Rotate randomized recruiter quotes every 5 seconds while analyzing
+  // Rotate randomized recruiter quotes every 8 seconds while analyzing
   useEffect(() => {
     if (stage === "analyzing") {
       setQuoteIndex(Math.floor(Math.random() * RECRUITER_QUOTES.length));
       const timer = setInterval(() => {
         setQuoteIndex((prev) => (prev + 1) % RECRUITER_QUOTES.length);
-      }, 5000);
+      }, 8000);
       return () => clearInterval(timer);
     }
   }, [stage]);
@@ -306,7 +308,15 @@ export default function Analyzer() {
             <motion.div key="input" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex flex-col lg:grid lg:grid-cols-[1.1fr_1fr] gap-6 w-full min-w-0">
               {/* Left column — resume upload + history */}
               <div className="space-y-6 min-w-0 w-full">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">step 1 · resume</div>
+                <div className="flex items-center justify-between border-b border-border/40 pb-2 mb-1">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">step 1 · resume</div>
+                  <button
+                    onClick={() => setShowTricksModal(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-[11px] font-mono font-semibold text-accent hover:bg-accent/20 transition-all shadow-2xs"
+                  >
+                    <Sparkles className="h-3 w-3" /> 50+ Recruiter Tricks Blueprint
+                  </button>
+                </div>
                 <UploadZone onFile={setFile} />
                 {error && (
                   <div className="flex flex-col sm:flex-row items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
@@ -602,6 +612,9 @@ export default function Analyzer() {
                   <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-[18px] py-[10px] text-sm hover:bg-secondary/20 transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto">
                     <Mail className="h-4 w-4" /> Cover letter PDF
                   </button>
+                  <button onClick={() => setShowTricksModal(true)} className="bg-accent/10 text-accent border border-accent/30 font-medium rounded-md px-[16px] py-[10px] text-sm hover:bg-accent/20 transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto">
+                    <Sparkles className="h-4 w-4" /> 50+ Recruiter Tricks
+                  </button>
                   <button onClick={() => setStage("input")} className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2 w-full sm:w-auto text-center">New analysis</button>
                 </div>
               </div>
@@ -874,6 +887,7 @@ export default function Analyzer() {
           )}
         </AnimatePresence>
       </section>
+      <ResumeTricksModal isOpen={showTricksModal} onClose={() => setShowTricksModal(false)} />
     </SiteLayout>
   );
 }
