@@ -674,9 +674,6 @@ export default function Analyzer() {
                   <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-[18px] py-[10px] text-sm hover:bg-secondary/20 transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto">
                     <Mail className="h-4 w-4" /> Cover letter PDF
                   </button>
-                  <button onClick={() => setShowTricksModal(true)} className="bg-accent/10 text-accent border border-accent/30 font-medium rounded-md px-[16px] py-[10px] text-sm hover:bg-accent/20 transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto">
-                    <Sparkles className="h-4 w-4" /> 50+ Recruiter Tricks
-                  </button>
                   <button onClick={() => setStage("input")} className="text-muted-foreground hover:text-foreground text-sm font-medium px-4 py-2 w-full sm:w-auto text-center">New analysis</button>
                 </div>
               </div>
