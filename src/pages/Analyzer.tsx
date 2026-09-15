@@ -84,6 +84,16 @@ export default function Analyzer() {
   const [resumeText, setResumeText] = useState("");
   const [company, setCompany] = useState("Stripe");
   const [role, setRole] = useState("Senior Backend Engineer");
+  const [location, setLocation] = useState("Remote");
+
+  const buildLinkedinJobsUrl = (comp: string, r: string, loc: string) => {
+    const query = [comp, r].filter(Boolean).join(" ").trim();
+    let url = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(query)}&f_EA=true`;
+    if (loc && loc.trim()) {
+      url += `&location=${encodeURIComponent(loc.trim())}`;
+    }
+    return url;
+  };
   const [jd, setJd] = useState("We're hiring a Senior Backend Engineer to scale our payments platform. You'll design distributed services in Go and TypeScript, own SLOs, and partner with infra on multi-region rollouts. Strong systems fundamentals, observability mindset, and a bias for measurable impact.");
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -154,7 +164,7 @@ export default function Analyzer() {
         resumeMime = file.type || "application/pdf";
         resumeName = file.name;
       }
-      const base = { resumeText, resumeFile, resumeMime, resumeName, jobDescription: jd, company, role, tone };
+      const base = { resumeText, resumeFile, resumeMime, resumeName, jobDescription: jd, company, role, location, tone };
       const tAll = performance.now();
 
       const [g1, g2, g3] = await Promise.all([
@@ -354,7 +364,7 @@ export default function Analyzer() {
               <div className="space-y-6 min-w-0 w-full">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">step 2 · target role</div>
                 <div className="rounded-xl border border-border/80 bg-card p-4 space-y-4 w-full min-w-0">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-4 sm:grid-cols-3">
                     <div className="space-y-2 min-w-0">
                       <Label htmlFor="company" className="text-sm font-medium text-foreground">Company</Label>
                       <Input id="company" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Stripe" value={company} onChange={e => setCompany(e.target.value)} />
@@ -362,6 +372,10 @@ export default function Analyzer() {
                     <div className="space-y-2 min-w-0">
                       <Label htmlFor="role" className="text-sm font-medium text-foreground">Target role</Label>
                       <Input id="role" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Senior Backend Engineer" value={role} onChange={e => setRole(e.target.value)} />
+                    </div>
+                    <div className="space-y-2 min-w-0">
+                      <Label htmlFor="location" className="text-sm font-medium text-foreground">Target Location / Place</Label>
+                      <Input id="location" className="w-full bg-card border-border/80 focus-visible:ring-foreground" placeholder="e.g. Remote, San Francisco, CA" value={location} onChange={e => setLocation(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -519,12 +533,9 @@ export default function Analyzer() {
                         </div>
                         <div>
                           <h2 className="text-lg font-semibold tracking-tight text-foreground font-display">Company Intel & Target Assessment</h2>
-                          <p className="text-xs text-muted-foreground">Firecrawl live API research for {company || "target company"}</p>
+                          <p className="text-xs text-muted-foreground">Executive intelligence research for {company || "target company"}</p>
                         </div>
                       </div>
-                      <span className="rounded-full bg-accent/10 border border-accent/20 px-2.5 py-1 text-[10px] font-mono text-accent font-semibold flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" /> Powered by Firecrawl API
-                      </span>
                     </div>
 
                     {result.chanceOfInterviewing && (
@@ -535,7 +546,7 @@ export default function Analyzer() {
                     )}
 
                     <div className="space-y-1.5 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap rounded-lg border border-border/60 bg-background/50 p-4">
-                      <span className="font-semibold text-foreground block uppercase tracking-wider text-[10px] font-mono">Firecrawl Tech & Culture Profile</span>
+                      <span className="font-semibold text-foreground block uppercase tracking-wider text-[10px] font-mono">Company Tech & Culture Profile</span>
                       {result.companyBrief}
                     </div>
                   </div>
@@ -553,14 +564,19 @@ export default function Analyzer() {
                           Live Job Openings & Target Careers
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          Real-time hiring opportunities for {company || "Target Company"} & {role || "your target role"} discovered via Firecrawl API.
+                          Real-time hiring opportunities for {company || "Target Company"} & {role || "your target role"} {location ? `in ${location}` : ""}.
                         </p>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-accent/10 border border-accent/20 px-3 py-1 text-xs font-mono text-accent font-semibold flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5" /> Firecrawl Live Jobs
-                      </span>
+                      <a
+                        href={buildLinkedinJobsUrl(company, role, location)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full bg-blue-600/10 hover:bg-blue-600/20 border border-blue-600/20 px-3 py-1 text-xs font-mono text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1.5 transition-all"
+                      >
+                        <Briefcase className="h-3.5 w-3.5" /> LinkedIn Easy Apply Search
+                      </a>
                       {result.jobOpenings && result.jobOpenings.length > 0 && (
                         <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
                           {result.jobOpenings.length} Positions Available
@@ -606,22 +622,22 @@ export default function Analyzer() {
                     <div className="rounded-xl border border-border/60 bg-background/50 p-6 text-center space-y-3">
                       <div className="flex items-center justify-center gap-2 text-sm font-semibold text-foreground">
                         <Briefcase className="h-4 w-4 text-accent" />
-                        <span>Direct Recruiter & Career Portal Direct Search</span>
+                        <span>Direct Recruiter & Career Portal Search</span>
                       </div>
                       <p className="text-xs text-muted-foreground max-w-lg mx-auto leading-relaxed">
-                        Search live career openings for <strong className="text-foreground">{role || "this role"}</strong> at <strong className="text-foreground">{company || "this company"}</strong> directly on leading recruiter databases:
+                        Search live career openings for <strong className="text-foreground">{role || "this role"}</strong> at <strong className="text-foreground">{company || "this company"}</strong> {location ? `in ${location}` : ""} directly on leading recruiter databases:
                       </p>
                       <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
                         <a
-                          href={`https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent((company || "") + " " + (role || ""))}`}
+                          href={buildLinkedinJobsUrl(company, role, location)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent text-white text-xs font-semibold hover:bg-accent/90 transition-all shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-all shadow-xs"
                         >
-                          Search LinkedIn Careers <ExternalLink className="h-3.5 w-3.5" />
+                          Search LinkedIn Easy Apply Jobs <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                         <a
-                          href={`https://www.google.com/search?q=${encodeURIComponent((company || "") + " " + (role || "") + " careers jobs openings")}`}
+                          href={`https://www.google.com/search?q=${encodeURIComponent((company || "") + " " + (role || "") + (location ? " " + location : "") + " careers jobs openings")}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-secondary text-foreground border border-border/80 text-xs font-semibold hover:bg-secondary/80 transition-all"

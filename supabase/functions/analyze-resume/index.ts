@@ -74,7 +74,7 @@ function getFallbackCompanyBrief(company: string, role: string): string {
   return `• ${company} Careers: Hiring for the ${role} position to collaborate on core product modules. Tech stack leverages modern cloud infrastructure, CI/CD automation, and high-availability service design.\n• ${company} Tech Stack: Includes React/TypeScript for frontend interfaces, backed by microservices, relational databases, and automated testing suites.\n• ${company} Engineering Culture: Values clean code, system scalability, performance metrics, and tight collaboration cycles.`;
 }
 
-async function firecrawlCompanyResearch(company: string, role: string): Promise<{
+async function firecrawlCompanyResearch(company: string, role: string, location: string = ""): Promise<{
   companyBrief: string;
   jobOpenings: Array<{ title: string; snippet: string; url: string }>;
 }> {
@@ -85,6 +85,7 @@ async function firecrawlCompanyResearch(company: string, role: string): Promise<
 
   if (FIRECRAWL_API_KEY) {
     try {
+      const locQuery = location.trim() ? ` ${location.trim()}` : "";
       const [r1, r2] = await Promise.all([
         fetch("https://api.firecrawl.dev/v1/search", {
           method: "POST",
@@ -94,7 +95,7 @@ async function firecrawlCompanyResearch(company: string, role: string): Promise<
         fetch("https://api.firecrawl.dev/v1/search", {
           method: "POST",
           headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ query: `${company} ${role} jobs careers openings`, limit: 5 }),
+          body: JSON.stringify({ query: `${company} ${role}${locQuery} jobs careers openings`, limit: 5 }),
         })
       ]);
 
@@ -239,7 +240,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { resumeText, resumeFile, resumeMime, resumeName, jobDescription, company, role, tone, group = "all", priorModules = [], debugFailPrimary = false } = await req.json();
+    const { resumeText, resumeFile, resumeMime, resumeName, jobDescription, company, role, location, tone, group = "all", priorModules = [], debugFailPrimary = false } = await req.json();
     const t0 = Date.now();
 
     if ((!resumeText || resumeText.length < 40) && !resumeFile) {
@@ -254,7 +255,7 @@ Deno.serve(async (req) => {
     }
 
     const wantsCompanyBrief = group === "all" || group === "critical";
-    const { companyBrief, jobOpenings } = wantsCompanyBrief ? await firecrawlCompanyResearch(company ?? "", role ?? "") : { companyBrief: "", jobOpenings: [] };
+    const { companyBrief, jobOpenings } = wantsCompanyBrief ? await firecrawlCompanyResearch(company ?? "", role ?? "", location ?? "") : { companyBrief: "", jobOpenings: [] };
 
     const activeIds = group === "all" ? MODULES.map(m => m.id) : (GROUPS[group] ?? MODULES.map(m => m.id));
     const activeModules = MODULES.filter(m => activeIds.includes(m.id));
