@@ -61,27 +61,37 @@ export type AnalysisReport = {
 export function filterGenuineKeywords(keywords: string[]): string[] {
   if (!Array.isArray(keywords)) return [];
 
+  // Known genuine technical tools, languages, frameworks, databases, platforms, protocols, certifications
+  const knownTechPattern = /^(typescript|javascript|python|java|c\+\+|golang|go|rust|scala|kotlin|swift|ruby|php|sql|nosql|html|css|html5|css3|bash|shell|powershell|r|matlab|dart|elixir|haskell|clojure|assembly|react|next\.js|nextjs|vue|vue\.js|angular|svelte|node\.js|nodejs|express|express\.js|fastapi|django|flask|spring|spring boot|ruby on rails|laravel|asp\.net|\.net|dotnet|tailwindcss|tailwind|bootstrap|graphql|rest api|rest apis|restful api|grpc|soap|json|xml|yaml|kafka|apache kafka|rabbitmq|sqs|sns|redis|memcached|postgresql|postgres|mysql|sqlite|oracle|mssql|sql server|mongodb|dynamodb|cassandra|elasticsearch|opensearch|neo4j|pinecone|chromadb|supabase|firebase|aws|amazon web services|gcp|google cloud|azure|microsoft azure|docker|kubernetes|k8s|terraform|ansible|pulumi|jenkins|github actions|gitlab ci|circleci|helm|prometheus|grafana|datadog|new relic|splunk|opentelemetry|slo|slos|sli|slis|sla|slas|observability|ci\/cd|devops|mlops|git|svn|jira|confluence|linux|unix|ubuntu|centos|debian|alpine|security|oauth|oauth2|jwt|saml|tls|ssl|crypto|blockchain|solidity|web3|ethers\.js|web3\.js|power bi|tableau|excel|pandas|numpy|scikit-learn|tensorflow|pytorch|keras|opencv|nltk|spacy|airflow|spark|apache spark|hadoop|flink|dbt|snowflake|bigquery|redshift|glue|athena|quicksight|s3|lambda|ec2|ecs|eks|fargate|sqs|sns|dynamodb|rds|aurora|cloudfront|route53|iam|cloudwatch|cloudtrail|step functions|eventbridge|vault|consul|envoy|istio|linkerd|pwa|webrtc|websocket|websockets|unit testing|jest|cypress|playwright|selenium|junit|pytest|mocha|chai|vitest|vite|webpack|babel|rollup|esbuild|turbopack)$/i;
+
   const stopWords = new Set([
     "with", "for", "our", "your", "the", "and", "that", "this", "from", "into",
     "over", "under", "about", "above", "across", "after", "again", "against",
     "along", "among", "around", "before", "behind", "below", "beneath", "beside",
     "between", "beyond", "during", "inside", "outside", "through", "throughout",
-    "toward", "towards", "underneath", "until", "within", "without", "our", "all"
+    "toward", "towards", "underneath", "until", "within", "without", "our", "all",
+    "must", "have", "need", "should", "ability", "experience", "mindset", "fundamentals",
+    "impact", "rollouts", "services", "platform", "platforms", "solutions", "environment",
+    "practices", "skills", "knowledge", "understanding", "familiarity"
   ]);
 
-  const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed)\b/i;
+  const verbPhrases = /^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|collaborating|building|built|driving|driven|managing|managed|handling|handled|using|used|creating|created|design|designing|designed|scale|scaling|scaled|own|owning|owned|partner|partnering|partnered|deliver|delivering|delivered|lead|leading|led|ensure|ensuring|ensured|support|supporting|supported|maintain|maintaining|maintained|implement|implementing|implemented|optimize|optimizing|optimized|develop|developing|developed|provide|providing|provided|execute|executing|executed|measurable|multi-region|distributed|systems)\b/i;
 
-  const junkKeywords = new Set([
-    "partner with infra", "multi-region rollouts", "systems fundamentals", "observability mindset",
-    "payments platform", "scale our payments platform", "design distributed services", "own slos",
-    "working on", "working with", "experience with", "ability to", "bias for", "strong background",
-    "responsible for", "hands on", "hands-on", "knowledge of", "understanding of", "familiar with",
-    "track record", "collaborate with", "team player", "good communication", "fast paced",
-    "fast-paced", "high volume", "day to day", "day-to-day", "self starter", "self-starter",
-    "drive results", "years of experience", "proven track record", "passionate about", "role at",
-    "building scalable", "working in", "comfortable with", "deep understanding", "must have",
-    "nice to have", "looking for", "ideal candidate", "team orientation", "strong communication",
-    "written and verbal", "fast learner", "detail oriented", "detail-oriented", "problem solver"
+  const genericEnglishNouns = new Set([
+    "distributed services", "observability mindset", "systems fundamentals", "measurable impact",
+    "multi-region rollouts", "partner with infra", "scale our payments platform", "payments platform",
+    "design distributed services", "own slos", "working on", "working with", "experience with",
+    "ability to", "bias for", "strong background", "responsible for", "hands on", "hands-on",
+    "knowledge of", "understanding of", "familiar with", "track record", "collaborate with",
+    "team player", "good communication", "fast paced", "fast-paced", "high volume", "day to day",
+    "day-to-day", "self starter", "self-starter", "drive results", "years of experience",
+    "proven track record", "passionate about", "role at", "building scalable", "working in",
+    "comfortable with", "deep understanding", "must have", "nice to have", "looking for",
+    "ideal candidate", "team orientation", "strong communication", "written and verbal",
+    "fast learner", "detail oriented", "detail-oriented", "problem solver", "problem-solving",
+    "high availability", "production systems", "team collaboration", "agile environment",
+    "best practices", "code quality", "peer review", "system design", "distributed systems",
+    "technical leadership", "engineering culture", "product delivery", "continuous improvement"
   ]);
 
   return keywords
@@ -89,22 +99,37 @@ export function filterGenuineKeywords(keywords: string[]): string[] {
     .filter(k => {
       if (!k || k.length < 2 || k.length > 28) return false;
       const lower = k.toLowerCase();
-      if (junkKeywords.has(lower)) return false;
 
+      // 1. Explicit check blocklist of generic JD English phrases
+      if (genericEnglishNouns.has(lower)) return false;
+
+      // 2. If it matches a known genuine technical skill/tool/framework, ACCEPT immediately!
+      if (knownTechPattern.test(lower)) return true;
+
+      // 3. For any other candidate string:
       const words = k.split(/\s+/);
-      // Genuine skills are typically 1, 2, or max 3 concise words (e.g., "Go", "AWS", "REST API", "PostgreSQL")
-      if (words.length > 3) return false;
 
+      // If it's more than 2 words and NOT a known tech pattern, REJECT!
+      if (words.length > 2) return false;
+
+      // If starts with an English action verb or filler adjective, REJECT!
       if (verbPhrases.test(lower)) return false;
 
-      // Reject strings starting or ending with English prepositions/pronouns
+      // If first or last word is a generic English preposition/stop word, REJECT!
       if (stopWords.has(words[0].toLowerCase()) || stopWords.has(words[words.length - 1].toLowerCase())) {
         return false;
       }
 
-      // Reject generic JD descriptive terms unless specific tech
-      if (/\b(partner|scale|design|own|rollouts|mindset|platform|fundamentals|environment|experience|services)\b/i.test(lower)) {
-        if (/\b(partner with|scale our|own slos|observability mindset|systems fundamentals|multi-region|distributed services|payments platform)\b/i.test(lower)) {
+      // If a 2-word phrase contains generic non-tech nouns like "mindset", "fundamentals", "impact", "rollouts", "services", "platform", "environment", "practices", "culture", REJECT!
+      if (words.length === 2) {
+        if (/\b(services|mindset|fundamentals|impact|rollouts|platform|environment|practices|culture|strategy|delivery|ownership|partner|infra|infrastructure|systems|architecture|management|leadership|collaboration|team)\b/i.test(lower)) {
+          return false;
+        }
+      }
+
+      // If single word, check if it's a generic English noun
+      if (words.length === 1) {
+        if (/\b(services|mindset|fundamentals|impact|rollouts|platform|environment|practices|culture|strategy|delivery|ownership|partner|infra|infrastructure|architecture|management|leadership|collaboration|team|work|code|system|systems)\b/i.test(lower)) {
           return false;
         }
       }
