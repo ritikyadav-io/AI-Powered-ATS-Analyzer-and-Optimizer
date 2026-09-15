@@ -57,6 +57,34 @@ export type AnalysisReport = {
   role?: string;
 };
 
+export function filterGenuineKeywords(keywords: string[]): string[] {
+  if (!Array.isArray(keywords)) return [];
+  const junkPhrases = new Set([
+    "working on", "working with", "experience with", "ability to", "bias for",
+    "strong background", "responsible for", "hands on", "hands-on", "knowledge of",
+    "understanding of", "familiar with", "track record", "collaborate with",
+    "team player", "good communication", "fast paced", "fast-paced", "high volume",
+    "day to day", "day-to-day", "self starter", "self-starter", "drive results",
+    "years of experience", "proven track record", "passionate about", "role at",
+    "building scalable", "working in", "comfortable with", "deep understanding",
+    "must have", "nice to have", "looking for", "ideal candidate", "team orientation",
+    "strong communication", "written and verbal", "fast learner", "detail oriented",
+    "detail-oriented", "problem solver", "problem-solving"
+  ]);
+
+  return keywords
+    .map(k => (typeof k === "string" ? k.trim() : ""))
+    .filter(k => {
+      if (!k || k.length < 2 || k.length > 40) return false;
+      const lower = k.toLowerCase();
+      if (junkPhrases.has(lower)) return false;
+      if (/^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|building|driving|managing|handling|using|creating)\b/i.test(lower)) {
+        return false;
+      }
+      return true;
+    });
+}
+
 export function enhanceBullet(bullet: string, rewrites: { before: string; after: string }[] = []): string {
   if (!bullet || typeof bullet !== "string") return "";
   const trimmed = bullet.trim();
@@ -305,7 +333,8 @@ export function buildAnalysisPdf(r: AnalysisReport): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(71, 85, 105);
-  const kwStr = (r.missingKeywords && r.missingKeywords.length > 0) ? r.missingKeywords.join("   |   ") : "None detected. Perfect keyword coverage!";
+  const genuineKw = filterGenuineKeywords(r.missingKeywords || []);
+  const kwStr = genuineKw.length > 0 ? genuineKw.join("   |   ") : "None detected. Perfect keyword coverage!";
   y = wrap(doc, kwStr, M + 2, y, CW - 4, 4.5) + 6;
 
   // ====================================================

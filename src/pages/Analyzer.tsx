@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertTriangle, AlertCircle, X, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { buildAnalysisPdf, buildCoverLetterPdf, buildImprovedResumePdf, generateLatexResume, generateWordResumeHtml, AnalysisReport, enhanceBullet, enhanceSummary } from "@/lib/reportPdf";
+import { buildAnalysisPdf, buildCoverLetterPdf, buildImprovedResumePdf, generateLatexResume, generateWordResumeHtml, filterGenuineKeywords, AnalysisReport, enhanceBullet, enhanceSummary } from "@/lib/reportPdf";
 import { RECRUITER_QUOTES } from "@/data/recruiterQuotes";
 import { getHistory, saveHistory, removeHistory, HistoryEntry } from "@/lib/historyStore";
 import { Pencil, Check, Copy } from "lucide-react";
@@ -77,7 +77,7 @@ function fileToBase64(file: File): Promise<string> {
 export default function Analyzer() {
   const [stage, setStage] = useState<Stage>("input");
   const [tone, setTone] = useState<(typeof tones)[number]>("Technical");
-  const [tab, setTab] = useState<"modules" | "rewrite" | "preview">("modules");
+  const [tab, setTab] = useState<"modules" | "rewrite">("modules");
 
   const [file, setFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState("");
@@ -206,7 +206,7 @@ export default function Analyzer() {
         },
         categoryScores: g1.categoryScores ?? [],
         modules: allModules,
-        missingKeywords: g1.missingKeywords ?? [],
+        missingKeywords: filterGenuineKeywords(g1.missingKeywords ?? []),
         strongPoints: g1.strongPoints ?? [],
         rewrites: g3.rewrites ?? [],
         mitMasterAudit: g3.mitMasterAudit || "MIT Master Academic & Recruiter Audit: High-alignment candidate demonstrating executive-level impact, quantified metrics, and ATS compliance.",
@@ -688,7 +688,6 @@ export default function Analyzer() {
                   {[
                     { id: "modules" as const, label: "Modules", icon: Eye },
                     { id: "rewrite" as const, label: "AI Rewrite", icon: Wand2 },
-                    { id: "preview" as const, label: "Compare", icon: FileCode2 },
                   ].map(t => (
                     <button
                       key={t.id}
@@ -709,7 +708,6 @@ export default function Analyzer() {
                   {[
                     { id: "modules" as const, label: "Modules", icon: Eye },
                     { id: "rewrite" as const, label: "AI Rewrite", icon: Wand2 },
-                    { id: "preview" as const, label: "Compare & Export", icon: FileCode2 },
                   ].map(t => (
                     <button
                       key={t.id}
@@ -827,255 +825,6 @@ export default function Analyzer() {
                         onChange={(v) => setResult(r => r ? ({ ...r, recruiterDm: v }) : r)}
                       />
                     )}
-                  </div>
-                </div>
-              )}
-
-               {tab === "preview" && (
-                <div className="space-y-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                      <GitCompare className="h-3.5 w-3.5" /> Full candidate evaluation & compare
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" onClick={downloadFullReport} className="bg-accent text-white font-medium"><Download className="mr-1.5 h-3.5 w-3.5" /> Full report PDF</Button>
-                      <Button variant="outline" size="sm" onClick={downloadCoverLetter}><Mail className="mr-1.5 h-3.5 w-3.5" /> Cover letter PDF</Button>
-                    </div>
-                  </div>
-
-                  {/* Fully Furnished Candidate Resume Preview Card */}
-                  <div className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-md relative overflow-hidden">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Executive ATS Evaluation
-                          </span>
-                          <span className="text-xs text-muted-foreground font-mono">Original: {result.overallScore}/100</span>
-                        </div>
-                        <h3 className="text-xl font-bold tracking-tight text-foreground mt-1.5">Executive Candidate Profile Summary</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">Structured with candidate header, education, experience, projects, skills, and certifications.</p>
-                      </div>
-                    </div>
-
-                    {/* Live HTML Executive Resume Render */}
-                    <div className="rounded-lg border border-border/80 bg-background/80 p-6 sm:p-10 font-sans text-foreground space-y-5 max-w-4xl mx-auto shadow-inner text-left">
-                      {/* H1 Candidate Header */}
-                      <div className="text-center border-b border-foreground/20 pb-3 space-y-1">
-                        <h1 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-wide text-foreground">
-                          {result.candidate?.name && result.candidate.name !== "Candidate" ? result.candidate.name : "RITIK YADAV"}
-                        </h1>
-                        <p className="text-xs text-muted-foreground font-medium flex flex-wrap items-center justify-center gap-2 leading-relaxed">
-                          <span>{result.candidate?.phone || "+91-8824318839"}</span>
-                          <span>|</span>
-                          <span>{result.candidate?.email || "yadavritik2027@gmail.com"}</span>
-                          <span>|</span>
-                          <span>{result.candidate?.linkedin || "linkedin.com/in/ritikyadav18"}</span>
-                          <span>|</span>
-                          <span>{result.candidate?.github || "github.com/ritikyadav-io"}</span>
-                          <span>|</span>
-                          <span>{result.candidate?.location || "Jaipur, 302039"}</span>
-                        </p>
-                      </div>
-
-                      {/* Section 1: Professional Summary */}
-                      <div className="space-y-1.5">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/80 pb-0.5">Professional Summary</h2>
-                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                          {enhanceSummary(result.candidate?.summary || "", result.company, result.candidate?.title)}
-                        </p>
-                      </div>
-
-                      {/* Section 2: Education */}
-                      <div className="space-y-1.5">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/80 pb-0.5">Education</h2>
-                        <div className="text-xs sm:text-sm space-y-2">
-                          {(result.candidate?.education && result.candidate.education.length > 0) ? (
-                            result.candidate.education.map((edu, i) => (
-                              <div key={i} className="space-y-0.5">
-                                <div className="flex items-baseline justify-between">
-                                  <span className="font-bold text-foreground">• {edu.degree}</span>
-                                  <span className="text-xs text-muted-foreground font-mono font-semibold">{edu.year}</span>
-                                </div>
-                                <div className="text-xs text-muted-foreground italic pl-3">{edu.school}</div>
-                                {edu.coursework && (
-                                  <div className="text-xs text-muted-foreground pl-3">- <span className="font-semibold text-foreground">Relevant Coursework:</span> {edu.coursework}</div>
-                                )}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="space-y-0.5">
-                              <div className="flex items-baseline justify-between">
-                                <span className="font-bold text-foreground">• Bachelor of Technology – Artificial Intelligence and Data Science</span>
-                                <span className="text-xs text-muted-foreground font-mono font-semibold">2023 — 2027</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground italic pl-3">Arya College of Engineering and IT (RTU Affiliated), Jaipur</div>
-                              <div className="text-xs text-muted-foreground pl-3">- <span className="font-semibold text-foreground">Relevant Coursework:</span> Data Structures and Algorithms (DSA), Operating Systems (OS), Database Management Systems (DBMS), Machine Learning (ML), Cloud Computing (CC)</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Section 3: Professional Experience */}
-                      <div className="space-y-2.5">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/80 pb-0.5">Professional Experience</h2>
-                        <div className="space-y-3">
-                          {(result.candidate?.experience && result.candidate.experience.length > 0) ? (
-                            result.candidate.experience.map((exp, i) => (
-                              <div key={i}>
-                                <div className="flex items-baseline justify-between text-xs sm:text-sm">
-                                  <span className="font-bold text-foreground">• {exp.role} – {exp.company}</span>
-                                  <span className="text-xs text-muted-foreground font-mono font-semibold">{exp.period} {exp.location ? `| ${exp.location}` : ""}</span>
-                                </div>
-                                <ul className="mt-1 text-xs sm:text-sm text-muted-foreground space-y-1 leading-relaxed pl-3">
-                                  {exp.bullets.map((b, bi) => (
-                                    <li key={bi}>- <span className="text-foreground">{enhanceBullet(b, result.rewrites)}</span></li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))
-                          ) : (
-                            <>
-                              <div>
-                                <div className="flex items-baseline justify-between text-xs sm:text-sm">
-                                  <span className="font-bold text-foreground">• AWS Data Engineer Intern – Graas Solutions</span>
-                                  <span className="text-xs text-muted-foreground font-mono font-semibold">May 2026 — Jul 2026 | Jaipur, India</span>
-                                </div>
-                                <ul className="mt-1 text-xs sm:text-sm text-muted-foreground space-y-1 leading-relaxed pl-3">
-                                  {result.rewrites && result.rewrites.length >= 3 ? (
-                                    result.rewrites.map((rw, i) => (
-                                      <li key={i}>- <span className="text-foreground">{rw.after}</span></li>
-                                    ))
-                                  ) : (
-                                    <>
-                                      <li>- Built automated reporting dashboards using SQL, Python, and AWS Lambda, helping the team move from manual reports toward real-time reporting.</li>
-                                      <li>- Worked on SQL query optimization and ETL pipelines using AWS Glue and Redshift, making data compilation faster and more reliable for the team.</li>
-                                      <li>- Helped automate data pipelines using AWS Lambda and S3, organizing data from multiple sources into clean, structured schemas.</li>
-                                    </>
-                                  )}
-                                </ul>
-                              </div>
-                              <div>
-                                <div className="flex items-baseline justify-between text-xs sm:text-sm">
-                                  <span className="font-bold text-foreground">• Full Stack Developer Intern – Groot Software</span>
-                                  <span className="text-xs text-muted-foreground font-mono font-semibold">May 2025 — Jul 2025 | Jaipur, India</span>
-                                </div>
-                                <ul className="mt-1 text-xs sm:text-sm text-muted-foreground space-y-1 leading-relaxed pl-3">
-                                  <li>- Built and deployed responsive web pages using HTML, CSS, and JavaScript, integrating REST APIs to fetch and render live data on both frontend and backend.</li>
-                                  <li>- Worked across the stack to debug layout issues and improve component structure, collaborating with senior developers using Git version control.</li>
-                                </ul>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Section 4: Projects */}
-                      <div className="space-y-2">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/80 pb-0.5">Projects</h2>
-                        <div className="text-xs sm:text-sm space-y-2">
-                          {(result.candidate?.projects && result.candidate.projects.length > 0) ? (
-                            result.candidate.projects.map((p, i) => (
-                              <div key={i}>
-                                <div className="font-bold text-foreground">• {p.name} {p.subtitle && <span className="font-normal italic text-muted-foreground">| {p.subtitle}</span>}</div>
-                                <ul className="mt-1 text-xs text-muted-foreground space-y-1 pl-3 leading-relaxed">
-                                  {(p.bullets || (p.desc ? [p.desc] : [])).map((b, bi) => (
-                                    <li key={bi}>- {enhanceBullet(b, result.rewrites)}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))
-                          ) : (
-                            <>
-                              <div>
-                                <div className="font-bold text-foreground">• Trail – Job Platforms Pipeline <span className="font-normal italic text-muted-foreground">| Associated with Graas Solutions (P) Ltd</span></div>
-                                <ul className="mt-1 text-xs text-muted-foreground space-y-1 pl-3 leading-relaxed">
-                                  <li>- Built a full-stack job pipeline platform that fetches listings from multiple job platforms and displays them together on one unified screen.</li>
-                                  <li>- Used AI to generate per-listing JD summaries, personalized cold emails, and outreach messages for faster applications.</li>
-                                  <li>- Added direct apply links and job filters for domain, experience level, and location matching.</li>
-                                </ul>
-                              </div>
-                              <div>
-                                <div className="font-bold text-foreground">• ElevateCv – ATS Tracking Tool <span className="font-normal italic text-muted-foreground">| Python, NLP, ATS Scoring</span></div>
-                                <ul className="mt-1 text-xs text-muted-foreground space-y-1 pl-3 leading-relaxed">
-                                  <li>- Built an ATS tracking tool triggering automated 15-node pipeline reviews for uploaded resumes and JDs.</li>
-                                  <li>- Designed multi-stage evaluation checking power verbs, keyword density, and formatting.</li>
-                                </ul>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Section 5: Technical Skills */}
-                      <div className="space-y-1.5">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/80 pb-0.5">Technical Skills</h2>
-                        <div className="text-xs sm:text-sm space-y-1">
-                          {result.candidate?.skills ? (
-                            Array.isArray(result.candidate.skills) ? (
-                              <div><span className="font-bold text-foreground">• Core Skills:</span> <span className="text-muted-foreground">{result.candidate.skills.join(", ")}</span></div>
-                            ) : (
-                              Object.entries(result.candidate.skills).map(([cat, list], i) => (
-                                <div key={i}><span className="font-bold text-foreground">• {cat}:</span> <span className="text-muted-foreground">{Array.isArray(list) ? list.join(", ") : String(list)}</span></div>
-                              ))
-                            )
-                          ) : (result.candidate?.topSkills && result.candidate.topSkills.length > 0) ? (
-                            <div><span className="font-bold text-foreground">• Core Technical Stack:</span> <span className="text-muted-foreground">{result.candidate.topSkills.join(", ")}</span></div>
-                          ) : (
-                            <>
-                              <div><span className="font-bold text-foreground">• Programming Languages:</span> <span className="text-muted-foreground">Python, HTML, CSS, REST API, SQL</span></div>
-                              <div><span className="font-bold text-foreground">• Analytics & Data Tools:</span> <span className="text-muted-foreground">Power BI, Excel (VLOOKUP, Pivot Tables, INDEX-MATCH), Matplotlib, Seaborn</span></div>
-                              <div><span className="font-bold text-foreground">• Databases:</span> <span className="text-muted-foreground">Amazon RDS, MySQL, Supabase, Database Schema Design</span></div>
-                              <div><span className="font-bold text-foreground">• Cloud:</span> <span className="text-muted-foreground">AWS (S3, Lambda, QuickSight, Athena, Redshift, Glue, CloudWatch)</span></div>
-                              <div><span className="font-bold text-foreground">• Currently Building:</span> <span className="text-muted-foreground">Data Structures and Algorithms (DSA) – practicing problem-solving on arrays, strings, and recursion</span></div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Section 6: Certifications */}
-                      <div className="space-y-1.5">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground border-b border-border/80 pb-0.5">Certifications</h2>
-                        <ul className="text-xs text-muted-foreground space-y-1 pl-3">
-                          {(result.candidate?.certifications && result.candidate.certifications.length > 0) ? (
-                            result.candidate.certifications.map((c, i) => <li key={i}>• {c}</li>)
-                          ) : (
-                            <>
-                              <li>• Java Programming Professional Certification → <span className="font-semibold text-foreground">IIT Bombay (2024)</span></li>
-                              <li>• HubSpot Data Integration Certificate → <span className="font-semibold text-foreground">HubSpot Academy (2025)</span></li>
-                              <li>• Technical Automation Proficiency → <span className="font-semibold text-foreground">Cursor, Lovable, Claude, ChatGPT for Data Pipeline Development</span></li>
-                            </>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border border-border/80 bg-card p-6">
-                      <h3 className="font-mono text-[10px] uppercase tracking-wider font-semibold text-success">Strong points</h3>
-                      <ul className="mt-3 space-y-2 text-sm">
-                        {result.strongPoints.map((s, i) => <li key={i} className="flex gap-2"><span className="text-success">✓</span><span className="text-foreground/90">{s}</span></li>)}
-                      </ul>
-                    </div>
-                    <div className="rounded-xl border border-border/80 bg-card p-6">
-                      <h3 className="font-mono text-[10px] uppercase tracking-wider font-semibold text-destructive">Keyword gap (from JD)</h3>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {result.missingKeywords.length > 0 ? result.missingKeywords.map(k => (
-                          <span key={k} className="rounded-md border border-destructive/20 bg-destructive/5 px-2.5 py-1 font-mono text-[10px] text-destructive">{k}</span>
-                        )) : <span className="text-xs text-muted-foreground">No missing keywords — great coverage.</span>}
-                      </div>
-                    </div>
-                    <div className="rounded-xl border border-border/80 bg-card p-6 lg:col-span-2">
-                      <h3 className="font-mono text-[10px] uppercase tracking-wider font-semibold text-primary">Company intel · {company}</h3>
-                      <pre className="mt-3 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">{result.companyBrief?.trim() ? result.companyBrief : `No public research surfaced for "${company}". The analysis still used the JD you pasted — try a more specific company name for richer context.`}</pre>
-                    </div>
-                    <div className="rounded-xl border border-border/80 bg-card p-6 lg:col-span-2">
-                      <h3 className="text-lg font-medium text-foreground tracking-tight">Paste-into-any-AI prompt</h3>
-                      <p className="mt-1 text-xs text-muted-foreground leading-normal">Copy this along with your resume + the downloaded PDF into ChatGPT, Claude or Gemini to regenerate a 90+ ATS-optimized resume.</p>
-                      <pre className="mt-4 max-h-56 overflow-auto rounded-lg border border-border bg-background p-4 font-mono text-xs leading-relaxed text-muted-foreground">{`You are a senior recruiter and ATS expert. Using the ElevateCv report attached, rewrite my resume to reach a 90+ ATS score for the ${role} role at ${company}. Preserve truthfulness. Weave in these missing JD keywords naturally: ${result.missingKeywords.join(", ") || "(none)"}. Use STAR + quantified impact in every bullet. Output ATS-safe plain text (no tables, columns, icons, or unusual fonts). Sound human — no AI-detectable filler.`}</pre>
-                      <button onClick={() => { navigator.clipboard.writeText(`You are a senior recruiter and ATS expert. Using the ElevateCv report attached, rewrite my resume to reach a 90+ ATS score for the ${role} role at ${company}. Preserve truthfulness. Weave in these missing JD keywords naturally: ${result.missingKeywords.join(", ") || "(none)"}. Use STAR + quantified impact in every bullet. Output ATS-safe plain text (no tables, columns, icons, or unusual fonts). Sound human — no AI-detectable filler.`); toast.success("Prompt copied"); }} className="mt-4 bg-card text-foreground border border-border/80 font-medium rounded-md px-3.5 py-2 text-xs hover:bg-secondary/20 transition-colors">Copy prompt</button>
-                    </div>
                   </div>
                 </div>
               )}

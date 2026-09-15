@@ -231,7 +231,7 @@ Deno.serve(async (req) => {
       ? `Also produce:
 - overallScore, verdict, candidate {name,title,topSkills}
 - 6 categoryScores (Keyword Match, Formatting, Impact, Readability, Skills Coverage, Recruiter Appeal), tone success/warning/destructive
-- missingKeywords (6-12 keywords literally in JD but absent from resume)
+- missingKeywords (6-12 genuine hard technical skills/tools/frameworks/certifications literally in JD but absent from resume; NO filler phrases like "working on", "experience with", etc.)
 - strongPoints, rewrites (4-6 STAR before/after)
 - coverLetter: ultra-concise, highly professional cover letter for ${role || "the role"} at ${company || "the company"} (max 120 words).
 - coldEmail: ultra-short, punchy professional cold email to the hiring manager for ${role || "the role"} at ${company || "the company"} (max 80 words).
@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
         ? `Also produce:
 - candidate {name,title,topSkills}
 - 6 categoryScores (Keyword Match, Formatting, Impact, Readability, Skills Coverage, Recruiter Appeal), tone success/warning/destructive
-- missingKeywords (6-12 keywords literally in JD but absent from resume)
+- missingKeywords (6-12 genuine hard technical skills/tools/frameworks/certifications literally in JD but absent from resume; NO filler phrases like "working on", "experience with", etc.)
 - strongPoints (3-5 real strengths).`
         : isAction
           ? `Produce ONLY:
@@ -440,10 +440,29 @@ Return ONLY JSON matching the schema. No prose.`;
     const resumeCorpus = ((resumeText || "") + " " + (resumeName || "")).toLowerCase();
     const jdLower = (jobDescription || "").toLowerCase();
     const rawKeywords: string[] = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : [];
+    const junkPhrases = new Set([
+      "working on", "working with", "experience with", "ability to", "bias for",
+      "strong background", "responsible for", "hands on", "hands-on", "knowledge of",
+      "understanding of", "familiar with", "track record", "collaborate with",
+      "team player", "good communication", "fast paced", "fast-paced", "high volume",
+      "day to day", "day-to-day", "self starter", "self-starter", "drive results",
+      "years of experience", "proven track record", "passionate about", "role at",
+      "building scalable", "working in", "comfortable with", "deep understanding",
+      "must have", "nice to have", "looking for", "ideal candidate", "team orientation",
+      "strong communication", "written and verbal", "fast learner", "detail oriented",
+      "detail-oriented", "problem solver", "problem-solving"
+    ]);
+
     const filteredMissing = Array.from(new Set(
       rawKeywords
         .map((k) => String(k).trim())
-        .filter((k) => k.length > 1 && k.length < 60)
+        .filter((k) => k.length > 1 && k.length < 50)
+        .filter((k) => {
+          const l = k.toLowerCase();
+          if (junkPhrases.has(l)) return false;
+          if (/^(working|worked|experience|ability|bias|strong|responsible|knowledge|understanding|familiar|collaborate|building|driving|managing|handling|using|creating)\b/i.test(l)) return false;
+          return true;
+        })
         .filter((k) => jdLower.includes(k.toLowerCase()))
         .filter((k) => !resumeCorpus.includes(k.toLowerCase()))
     )).slice(0, 14);
