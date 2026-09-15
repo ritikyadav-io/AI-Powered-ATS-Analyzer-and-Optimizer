@@ -97,13 +97,13 @@ export default function Analyzer() {
   const [pendingResult, setPendingResult] = useState<{ report: AnalysisResult; perf: any } | null>(null);
   const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * RECRUITER_QUOTES.length));
 
-  // Rotate randomized recruiter quotes every 2.5 seconds while analyzing
+  // Rotate randomized recruiter quotes every 5 seconds while analyzing
   useEffect(() => {
     if (stage === "analyzing") {
       setQuoteIndex(Math.floor(Math.random() * RECRUITER_QUOTES.length));
       const timer = setInterval(() => {
         setQuoteIndex((prev) => (prev + 1) % RECRUITER_QUOTES.length);
-      }, 2500);
+      }, 5000);
       return () => clearInterval(timer);
     }
   }, [stage]);
@@ -550,20 +550,11 @@ export default function Analyzer() {
               {/* Export bar (Moved Below Top Grid) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border/80 bg-card p-4 sm:p-6">
                 <div className="text-sm max-w-xl">
-                  <div className="font-semibold text-[17px] text-foreground mb-1">One-click ATS report & upgraded resume formats</div>
-                  <div className="text-xs text-muted-foreground leading-normal">Download your report PDF, cover letter, fully furnished 90+ ATS score resume PDF, Word (.doc) resume, or LaTeX (.tex) code.</div>
+                  <div className="font-semibold text-[17px] text-foreground mb-1">One-click ATS report & cover letter export</div>
+                  <div className="text-xs text-muted-foreground leading-normal">Download your comprehensive research-grade audit report PDF or your tailored cover letter.</div>
                 </div>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 w-full sm:w-auto">
-                  <button onClick={downloadImprovedResume} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-md px-[18px] py-[10px] text-sm hover:opacity-95 transition-opacity flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm">
-                    <Sparkles className="h-4 w-4" /> Download 90+ ATS Resume PDF
-                  </button>
-                  <button onClick={downloadWordResume} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md px-[18px] py-[10px] text-sm transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm">
-                    <Download className="h-4 w-4" /> Download Word (.doc)
-                  </button>
-                  <button onClick={downloadLatexResume} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md px-[18px] py-[10px] text-sm transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm">
-                    <FileCode2 className="h-4 w-4" /> Download LaTeX (.tex)
-                  </button>
-                  <button onClick={downloadFullReport} className="bg-accent text-white font-medium rounded-md px-[18px] py-[10px] text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 w-full sm:w-auto">
+                  <button onClick={downloadFullReport} className="bg-accent text-white font-semibold rounded-md px-[20px] py-[10px] text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm">
                     <FileDown className="h-4 w-4" /> Full report PDF
                   </button>
                   <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-[18px] py-[10px] text-sm hover:bg-secondary/20 transition-colors flex items-center justify-center gap-1.5 w-full sm:w-auto">
@@ -784,9 +775,8 @@ export default function Analyzer() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <button onClick={downloadImprovedResume} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-md px-3.5 py-2 text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-xs"><Sparkles className="h-3.5 w-3.5" /> 90+ ATS Resume PDF</button>
-                      <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-3.5 py-2 text-xs hover:bg-secondary/20 transition-colors flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Cover letter PDF</button>
                       <button onClick={downloadFullReport} className="bg-accent text-white font-medium rounded-md px-3.5 py-2 text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5"><Download className="h-3.5 w-3.5" /> Full report PDF</button>
+                      <button onClick={downloadCoverLetter} className="bg-card text-foreground border border-border/80 font-medium rounded-md px-3.5 py-2 text-xs hover:bg-secondary/20 transition-colors flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Cover letter PDF</button>
                     </div>
                   </div>
 
@@ -845,64 +835,27 @@ export default function Analyzer() {
                 <div className="space-y-6">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                      <GitCompare className="h-3.5 w-3.5" /> Full compare & export · ATS-safe format & LaTeX Code
+                      <GitCompare className="h-3.5 w-3.5" /> Full candidate evaluation & compare
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Button size="sm" onClick={downloadImprovedResume} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold shadow-sm"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> Download 90+ ATS PDF</Button>
-                      <Button size="sm" onClick={downloadWordResume} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm"><Download className="mr-1.5 h-3.5 w-3.5" /> Download Word (.doc)</Button>
-                      <Button size="sm" onClick={downloadLatexResume} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm"><FileCode2 className="mr-1.5 h-3.5 w-3.5" /> Download .tex</Button>
-                      <Button variant="outline" size="sm" onClick={copyLatexResume}><Copy className="mr-1.5 h-3.5 w-3.5" /> Copy LaTeX</Button>
-                      <Button variant="outline" size="sm" onClick={downloadCoverLetter}><Mail className="mr-1 h-3.5 w-3.5" /> Cover letter</Button>
-                      <Button size="sm" onClick={downloadFullReport} className="bg-gradient-primary text-primary-foreground"><Download className="mr-1 h-3.5 w-3.5" /> Report PDF</Button>
+                      <Button size="sm" onClick={downloadFullReport} className="bg-accent text-white font-medium"><Download className="mr-1.5 h-3.5 w-3.5" /> Full report PDF</Button>
+                      <Button variant="outline" size="sm" onClick={downloadCoverLetter}><Mail className="mr-1.5 h-3.5 w-3.5" /> Cover letter PDF</Button>
                     </div>
                   </div>
 
-                  {/* LaTeX Source Code Card */}
-                  <div className="rounded-xl border border-indigo-500/30 bg-card p-6 shadow-md space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                            <FileCode2 className="h-3.5 w-3.5" /> MIT Open-Source LaTeX Template
-                          </span>
-                          <span className="text-xs text-muted-foreground font-mono">XeLaTeX / Overleaf Ready</span>
-                        </div>
-                        <h3 className="text-lg font-bold tracking-tight text-foreground mt-1">LaTeX Resume Generator</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">Dynamically formatted with Carlito font, 0.5in margins, and your upgraded candidate STAR metrics.</p>
-                      </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button size="sm" onClick={copyLatexResume} variant="outline" className="text-xs">
-                          <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy LaTeX Code
-                        </Button>
-                        <Button size="sm" onClick={downloadLatexResume} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs">
-                          <Download className="mr-1.5 h-3.5 w-3.5" /> Download .tex File
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="relative">
-                      <pre className="max-h-72 overflow-y-auto rounded-lg border border-border bg-slate-950 p-4 font-mono text-xs text-slate-100 leading-relaxed text-left selection:bg-indigo-500 selection:text-white">
-                        {generateLatexResume(result)}
-                      </pre>
-                    </div>
-                  </div>
-
-                  {/* Fully Furnished 90+ ATS Resume Preview Card */}
-                  <div className="rounded-xl border border-emerald-500/30 bg-card p-6 sm:p-8 space-y-6 shadow-md relative overflow-hidden">
+                  {/* Fully Furnished Candidate Resume Preview Card */}
+                  <div className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-md relative overflow-hidden">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> 90+ ATS Score Guaranteed
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Executive ATS Evaluation
                           </span>
-                          <span className="text-xs text-muted-foreground font-mono">Original: {result.overallScore}/100 → Upgraded: 95/100</span>
+                          <span className="text-xs text-muted-foreground font-mono">Original: {result.overallScore}/100</span>
                         </div>
-                        <h3 className="text-xl font-bold tracking-tight text-foreground mt-1.5">Fully Furnished Executive ATS Resume</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">Structured with H1 candidate header, H2 section headings, 15mm margins, bold STAR metrics, and integrated JD keywords.</p>
+                        <h3 className="text-xl font-bold tracking-tight text-foreground mt-1.5">Executive Candidate Profile Summary</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">Structured with candidate header, education, experience, projects, skills, and certifications.</p>
                       </div>
-                      <Button size="sm" onClick={downloadImprovedResume} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold shadow-sm shrink-0">
-                        <Download className="mr-1.5 h-3.5 w-3.5" /> Download Resume PDF
-                      </Button>
                     </div>
 
                     {/* Live HTML Executive Resume Render */}

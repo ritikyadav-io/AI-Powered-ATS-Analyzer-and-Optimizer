@@ -130,180 +130,356 @@ export function buildAnalysisPdf(r: AnalysisReport): jsPDF {
   let y = M;
 
   const pageBreak = (need = 20) => {
-    if (y + need > 285) { doc.addPage(); y = M; }
+    if (y + need > 275) {
+      doc.addPage();
+      y = 18;
+    }
   };
 
-  // Header Banner
-  doc.setFillColor(15, 23, 42); // Deep slate charcoal
-  doc.rect(0, 0, W, 24, "F");
-  doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-  doc.text("ElevateCv — Executive ATS & Recruiter Report", M, 13);
-  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(203, 213, 225);
-  doc.text(`AUDIT DATE: ${new Date().toLocaleDateString()} | CONFIDENTIAL`, W - M, 13, { align: "right" });
+  // Helper for section header lines (Academic Research Paper style)
+  const drawSectionHeader = (numberStr: string, titleStr: string) => {
+    pageBreak(16);
+    doc.setDrawColor(30, 41, 59);
+    doc.setLineWidth(0.4);
+    doc.line(M, y, W - M, y);
+    y += 4;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${numberStr}. ${titleStr.toUpperCase()}`, M, y);
+    y += 2.5;
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.line(M, y, W - M, y);
+    y += 5;
+  };
+
+  // ====================================================
+  // 1. PAPER HEADER BANNER
+  // ====================================================
+  doc.setFillColor(15, 23, 42); // Executive Slate Charcoal
+  doc.rect(0, 0, W, 26, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text("ELEVATECV — EXECUTIVE ATS AUDIT & RESEARCH REPORT", M, 11);
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(203, 213, 225);
+  const docId = `ELEVATECV-ATS-${Math.floor(100000 + Math.random() * 900000)}`;
+  doc.text(`DOC ID: ${docId}   |   CONFIDENTIAL RESEARCH AUDIT`, W - M, 11, { align: "right" });
+
+  doc.setFontSize(8.5);
+  doc.setTextColor(226, 232, 240);
+  const candName = r.candidate?.name || "Candidate";
+  const targetRole = r.role || "Target Role";
+  const targetComp = r.company || "Target Company";
+  doc.text(`CANDIDATE: ${candName}   |   TARGET: ${targetRole} @ ${targetComp}   |   DATE: ${new Date().toLocaleDateString()}`, M, 19);
+
   y = 32;
 
-  // Metadata & Score Box
-  doc.setTextColor(30, 41, 59);
-  doc.setFontSize(10); doc.setFont("helvetica", "bold");
-  doc.text(`Candidate: ${r.candidate?.name || "Candidate"}   |   Target: ${r.role || "Target Role"} @ ${r.company || "Target Company"}`, M, y); 
-  y += 7;
-
-  // Score Badge
-  doc.setFontSize(26); doc.setFont("helvetica", "bold");
-  const sColor: [number, number, number] = r.overallScore >= 85 ? [16, 185, 129] : r.overallScore >= 70 ? [37, 99, 235] : r.overallScore >= 55 ? [217, 119, 6] : [220, 38, 38];
-  doc.setTextColor(...sColor);
-  doc.text(`${r.overallScore}/100`, M, y + 8);
-
-  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  y = wrap(doc, `Executive Verdict: ${r.verdict}`, M + 42, y + 2, CW - 42, 4.5) + 6;
-
-  // ----------------------------------------------------
-  // 🎓 PROFESSOR'S DIAGNOSTIC AUDIT & MASTERPLAN
-  // ----------------------------------------------------
-  pageBreak(45);
+  // ====================================================
+  // 2. ABSTRACT & EXECUTIVE VERDICT (RESEARCH BOX)
+  // ====================================================
   doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(M, y - 2, CW, 42, 2, 2, "FD");
+  doc.setDrawColor(203, 213, 225);
+  doc.roundedRect(M, y, CW, 26, 1.5, 1.5, "FD");
 
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Professor's Executive Audit & Structural Diagnostic", M + 4, y + 4);
+  // Score Badge Circle/Box
+  const sColor: [number, number, number] = r.overallScore >= 85 ? [16, 185, 129] : r.overallScore >= 70 ? [37, 99, 235] : r.overallScore >= 55 ? [217, 119, 6] : [220, 38, 38];
+  doc.setFillColor(...sColor);
+  doc.roundedRect(M + 3, y + 3, 28, 20, 1, 1, "F");
   
-  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 116, 139);
-  doc.text(`Audit Grade: ${r.overallScore >= 85 ? "A+ (Executive Distinction)" : r.overallScore >= 75 ? "A- (Interview Ready)" : r.overallScore >= 60 ? "B (Moderate Alignment)" : "C/D (High ATS Drop Risk)"}`, W - M - 4, y + 4, { align: "right" });
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text(`${r.overallScore}`, M + 17, y + 12, { align: "center" });
+  doc.setFontSize(7);
+  doc.text("ATS SCORE", M + 17, y + 18, { align: "center" });
 
-  y += 9;
-  doc.setFontSize(8.5); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 41, 59);
-  
-  // 4 Diagnostic Sub-Blocks
-  doc.text("1. Structure & Layout Architecture:", M + 4, y);
-  doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  doc.text("Margins 0.5\"-0.75\", single-column parsing safety, line density optimization.", M + 55, y);
-  y += 5.5;
+  // Verdict Abstract Text
+  doc.setTextColor(15, 23, 42);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.text("Abstract & Executive Recruiter Verdict:", M + 34, y + 7);
 
-  doc.setFont("helvetica", "bold"); doc.setTextColor(30, 41, 59);
-  doc.text("2. Power Verbs & Action Language:", M + 4, y);
-  doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  doc.text("Replaces passive phrasing (helped, managed) with high-impact executive verbs.", M + 55, y);
-  y += 5.5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(51, 65, 85);
+  wrap(doc, r.verdict || "High-alignment candidate evaluated through 15-node ATS diagnostic scanning.", M + 34, y + 12, CW - 36, 4);
 
-  doc.setFont("helvetica", "bold"); doc.setTextColor(30, 41, 59);
-  doc.text("3. Quantification & STAR Rigor:", M + 4, y);
-  doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  doc.text("Evaluates metrics density (%, $, time saved). Target: >80% bullets quantified.", M + 55, y);
-  y += 5.5;
+  y += 31;
 
-  doc.setFont("helvetica", "bold"); doc.setTextColor(30, 41, 59);
-  doc.text("4. Priority Action Plan:", M + 4, y);
-  doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  doc.text(`1. Add missing keywords  2. Quantify bullets with numbers  3. Enhance action verbs`, M + 55, y);
-  y += 12;
+  // ====================================================
+  // 3. SECTION 1: PERFORMANCE MATRIX & CATEGORY BREAKDOWN
+  // ====================================================
+  drawSectionHeader("1", "Performance Matrix & Category Score Breakdown");
 
-  // Category Breakdown
-  pageBreak(30);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Category Breakdown & Performance Pillars", M, y); y += 6;
-  doc.setFontSize(9); doc.setFont("helvetica", "normal");
-  r.categoryScores?.forEach(c => {
-    pageBreak(7);
-    doc.setTextColor(51, 65, 85);
-    doc.text(`${c.name}`, M, y);
-    doc.text(`${c.score}/100`, M + 55, y);
-    doc.setDrawColor(226, 232, 240); doc.setFillColor(241, 245, 249);
-    doc.rect(M + 72, y - 3, 100, 3, "F");
-    const barColor: [number, number, number] = c.score >= 80 ? [16, 185, 129] : c.score >= 60 ? [234, 179, 8] : [239, 68, 68];
-    doc.setFillColor(...barColor);
-    doc.rect(M + 72, y - 3, Math.max(1, c.score), 3, "F");
-    y += 5.5;
-  });
+  if (r.categoryScores && r.categoryScores.length > 0) {
+    r.categoryScores.forEach(c => {
+      pageBreak(7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+      doc.text(c.name, M + 2, y);
 
-  // Missing keywords
-  y += 4; pageBreak(20);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Missing Critical Keywords (from target Job Description)", M, y); y += 5;
-  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  y = wrap(doc, (r.missingKeywords || []).join("  |  ") || "None detected. Excellent keyword coverage!", M, y, CW, 4.5) + 6;
+      doc.setFont("helvetica", "bold");
+      const pillarColor: [number, number, number] = c.score >= 80 ? [16, 185, 129] : c.score >= 60 ? [217, 119, 6] : [220, 38, 38];
+      doc.setTextColor(...pillarColor);
+      doc.text(`${c.score}/100`, M + 65, y, { align: "right" });
 
-  // Strong points
-  pageBreak(20);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Core Resume Strengths", M, y); y += 5;
-  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  (r.strongPoints || []).forEach(s => {
-    pageBreak(7);
-    doc.text("-", M, y);
-    y = wrap(doc, s.trim(), M + 4, y, CW - 4, 4.5) + 1;
-  });
+      // Progress Bar Track
+      doc.setFillColor(226, 232, 240);
+      doc.roundedRect(M + 70, y - 3, 90, 3.5, 0.5, 0.5, "F");
+
+      // Progress Bar Fill
+      doc.setFillColor(...pillarColor);
+      doc.roundedRect(M + 70, y - 3, Math.max(2, (c.score / 100) * 90), 3.5, 0.5, 0.5, "F");
+
+      // Status Pill
+      const statusText = c.score >= 80 ? "EXCELLENT" : c.score >= 60 ? "MODERATE" : "CRITICAL";
+      doc.setFontSize(7);
+      doc.text(statusText, M + 165, y);
+
+      y += 6;
+    });
+  }
   y += 4;
 
-  // Modules
-  pageBreak(20);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Module-by-Module Findings & Copy-Paste Recommendations", M, y); y += 6;
-  r.modules.filter(m => m.weight !== "Action").forEach(m => {
-    pageBreak(30);
-    doc.setFillColor(241, 245, 249); doc.rect(M, y - 4, CW, 6.5, "F");
-    doc.setFontSize(9.5); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 41, 59);
-    doc.text(`${m.name} (${m.weight})`, M + 2, y);
-    doc.text(`${m.score}/100`, M + CW - 2, y, { align: "right" });
-    y += 5.5;
-    doc.setFontSize(8.5); doc.setFont("helvetica", "italic"); doc.setTextColor(100, 116, 139);
-    if (m.reason) y = wrap(doc, `Why: ${m.reason}`, M, y, CW, 4) + 2;
-    doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-    if (m.findings?.length) {
-      doc.setFont("helvetica", "bold"); doc.text("Findings:", M, y); y += 4;
+  // ====================================================
+  // 4. SECTION 2: PROFESSOR'S DIAGNOSTIC AUDIT
+  // ====================================================
+  drawSectionHeader("2", "Professor's Diagnostic Audit & Structural Masterplan");
+
+  pageBreak(40);
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(M, y, CW, 38, 1, 1, "FD");
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(15, 23, 42);
+  doc.text("Executive Diagnostic Grade:", M + 4, y + 5);
+
+  const gradeStr = r.overallScore >= 85 ? "A+ (Executive Distinction)" : r.overallScore >= 75 ? "A- (Interview Ready)" : r.overallScore >= 60 ? "B (Moderate Alignment)" : "C/D (High ATS Drop Risk)";
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...sColor);
+  doc.text(gradeStr, M + 48, y + 5);
+
+  let auditY = y + 11;
+  const auditPoints = [
+    ["1. Layout Architecture:", "Single-column parsing safety, 0.5\"-0.75\" margins, standard section headings."],
+    ["2. Action Language Density:", "Replaces passive verbs (helped, managed) with executive action power verbs."],
+    ["3. STAR Quantification:", "Evaluates metrics density (%, $, time saved). Target: >80% bullets quantified."],
+    ["4. Priority Action Plan:", "1. Integrate missing JD keywords  2. Add numerical impact  3. Elevate action verbs."]
+  ];
+
+  auditPoints.forEach(([label, desc]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(30, 41, 59);
+    doc.text(label, M + 4, auditY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(71, 85, 105);
+    doc.text(desc, M + 46, auditY);
+    auditY += 5.5;
+  });
+
+  y += 43;
+
+  // ====================================================
+  // 5. SECTION 3: KEYWORD DENSITY GAP ANALYSIS
+  // ====================================================
+  drawSectionHeader("3", "Keyword Density Gap Analysis (Target Job Description)");
+
+  pageBreak(15);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(220, 38, 38);
+  doc.text("Missing Critical Keywords:", M + 2, y);
+  y += 4.5;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(71, 85, 105);
+  const kwStr = (r.missingKeywords && r.missingKeywords.length > 0) ? r.missingKeywords.join("   |   ") : "None detected. Perfect keyword coverage!";
+  y = wrap(doc, kwStr, M + 2, y, CW - 4, 4.5) + 6;
+
+  // ====================================================
+  // 6. SECTION 4: CORE RESUME STRENGTHS
+  // ====================================================
+  drawSectionHeader("4", "Core Candidate Strengths & High-Alignment Points");
+
+  if (r.strongPoints && r.strongPoints.length > 0) {
+    r.strongPoints.forEach(sp => {
+      pageBreak(7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(16, 185, 129);
+      doc.text("[+]", M + 2, y);
+
       doc.setFont("helvetica", "normal");
+      doc.setTextColor(51, 65, 85);
+      y = wrap(doc, sp.trim(), M + 8, y, CW - 10, 4.2) + 1.5;
+    });
+  }
+  y += 4;
+
+  // ====================================================
+  // 7. SECTION 5: MODULE-BY-MODULE DIAGNOSTIC FINDINGS
+  // ====================================================
+  drawSectionHeader("5", "Module-by-Module Diagnostic Findings & Fixes");
+
+  const displayModules = (r.modules || []).filter(m => m.weight !== "Action");
+  displayModules.forEach(m => {
+    pageBreak(24);
+    doc.setFillColor(241, 245, 249);
+    doc.roundedRect(M, y, CW, 6, 0.5, 0.5, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${m.name}  (${m.weight} Weight)`, M + 3, y + 4.2);
+
+    const modColor: [number, number, number] = m.score >= 80 ? [16, 185, 129] : m.score >= 60 ? [217, 119, 6] : [220, 38, 38];
+    doc.setTextColor(...modColor);
+    doc.text(`${m.score}/100`, W - M - 3, y + 4.2, { align: "right" });
+
+    y += 8.5;
+
+    if (m.reason) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      y = wrap(doc, `Analysis Rationale: ${m.reason}`, M + 2, y, CW - 4, 3.8) + 2;
+    }
+
+    if (m.findings && m.findings.length > 0) {
+      pageBreak(8);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Findings:", M + 2, y);
+      y += 3.8;
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(71, 85, 105);
       m.findings.forEach(f => {
-        pageBreak(7);
-        doc.text("-", M + 2, y);
-        y = wrap(doc, f.trim(), M + 6, y, CW - 6, 4) + 1;
+        pageBreak(6);
+        doc.text("-", M + 4, y);
+        y = wrap(doc, f.trim(), M + 8, y, CW - 10, 3.8) + 1;
       });
     }
-    if (m.recommendations?.length) {
+
+    if (m.recommendations && m.recommendations.length > 0) {
+      pageBreak(8);
       y += 1;
-      doc.setFont("helvetica", "bold"); doc.setTextColor(16, 185, 129); doc.text("Actionable Fixes:", M, y); y += 4;
-      doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-      m.recommendations.forEach(f => {
-        pageBreak(7);
-        doc.text("-", M + 2, y);
-        y = wrap(doc, f.trim(), M + 6, y, CW - 6, 4) + 1;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(16, 185, 129);
+      doc.text("Actionable Recommendations:", M + 2, y);
+      y += 3.8;
+
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(71, 85, 105);
+      m.recommendations.forEach(rec => {
+        pageBreak(6);
+        doc.text("->", M + 4, y);
+        y = wrap(doc, rec.trim(), M + 9, y, CW - 11, 3.8) + 1;
       });
     }
+
     y += 4;
   });
 
-  // Rewrites
-  pageBreak(20);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Executive AI Bullet Rewrites (STAR + Quantified Impact)", M, y); y += 6;
-  (r.rewrites || []).forEach(rw => {
-    pageBreak(24);
-    doc.setFontSize(8.5); doc.setFont("helvetica", "bold"); doc.setTextColor(124, 58, 237);
-    doc.text(`[${rw.type}]`, M, y); y += 4.5;
-    doc.setFont("helvetica", "normal"); doc.setTextColor(220, 38, 38);
-    y = wrap(doc, `Before: ${rw.before}`, M, y, CW, 4.2) + 1;
-    doc.setTextColor(16, 185, 129);
-    y = wrap(doc, `After:  ${rw.after}`, M, y, CW, 4.2) + 4;
-  });
+  // ====================================================
+  // 8. SECTION 6: COMPARATIVE AI BULLET REWRITES
+  // ====================================================
+  drawSectionHeader("6", "Executive AI Bullet Rewrites (STAR Method)");
 
-  // Cover letter
-  pageBreak(30);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text(`Tailored Cover Letter — ${r.company || ""}`, M, y); y += 6;
-  doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(51, 65, 85);
-  y = wrap(doc, r.coverLetter || "", M, y, CW, 4.8) + 6;
+  if (r.rewrites && r.rewrites.length > 0) {
+    r.rewrites.forEach((rw, idx) => {
+      pageBreak(22);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(124, 58, 237);
+      doc.text(`[Rewrite #${idx + 1} - ${rw.type}]`, M + 2, y);
+      y += 4.2;
 
-  // ChatGPT Prompt
-  pageBreak(30);
-  doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(15, 23, 42);
-  doc.text("Paste-into-ChatGPT Prompt", M, y); y += 6;
-  doc.setFontSize(8.5); doc.setFont("helvetica", "normal"); doc.setTextColor(71, 85, 105);
-  const prompt = `You are a senior recruiter and ATS expert. Using the report below, rewrite my resume to achieve a 90+ ATS score for the ${r.role || "target"} role at ${r.company || "the target company"}. Preserve truthfulness. Weave in the missing keywords naturally. Use STAR + quantified impact in every bullet. Output ATS-safe plain text (no tables/columns/icons). Sound human — no AI-detectable filler.`;
-  y = wrap(doc, prompt, M, y, CW, 4) + 4;
+      // Before
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(220, 38, 38);
+      y = wrap(doc, `Original:  "${rw.before}"`, M + 4, y, CW - 6, 3.8) + 1;
 
-  // Footer note
-  pageBreak(10);
-  doc.setFontSize(8); doc.setTextColor(148, 163, 184);
-  doc.text("Generated by ElevateCv Executive Audit Engine · elevatecv.app", M, 290);
+      // After
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(16, 185, 129);
+      y = wrap(doc, `Upgraded: "${rw.after}"`, M + 4, y, CW - 6, 3.8) + 4;
+    });
+  }
+
+  // ====================================================
+  // 9. APPENDIX A: TAILORED COVER LETTER
+  // ====================================================
+  if (r.coverLetter && r.coverLetter.trim().length > 10) {
+    drawSectionHeader("7", "Appendix A: Tailored Executive Cover Letter");
+    pageBreak(30);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(51, 65, 85);
+    y = wrap(doc, r.coverLetter.trim(), M + 2, y, CW - 4, 4.2) + 6;
+  }
+
+  // ====================================================
+  // 10. APPENDIX B: CHATGPT REGENERATION MASTER PROMPT
+  // ====================================================
+  drawSectionHeader("8", "Appendix B: ChatGPT Master Regeneration Prompt");
+  pageBreak(25);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  const promptText = `You are a senior recruiter and ATS expert. Using the report findings above, rewrite my resume to achieve a 90+ ATS score for the ${r.role || "target"} role at ${r.company || "the target company"}. Preserve truthfulness. Weave in these missing keywords: ${(r.missingKeywords || []).join(", ") || "none"}. Use STAR + quantified impact in every bullet. Output ATS-safe plain text without tables or columns.`;
+  
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(203, 213, 225);
+  doc.roundedRect(M, y, CW, 20, 1, 1, "FD");
+  wrap(doc, promptText, M + 3, y + 4, CW - 6, 3.8);
+
+  // ====================================================
+  // 11. DYNAMIC MULTI-PAGE HEADER & FOOTER ENGINE
+  // ====================================================
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+
+    // Running Header for Pages 2+
+    if (p > 1) {
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.2);
+      doc.line(M, 10, W - M, 10);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(148, 163, 184);
+      doc.text("ELEVATECV EXECUTIVE ATS AUDIT & RESEARCH REPORT", M, 8);
+      doc.text("CONFIDENTIAL", W - M, 8, { align: "right" });
+    }
+
+    // Running Footer on All Pages
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+    doc.line(M, 287, W - M, 287);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184);
+    doc.text("ElevateCv Research Engine · elevatecv.app", M, 291);
+    doc.text(`Page ${p} of ${totalPages}`, W - M, 291, { align: "right" });
+  }
 
   return doc;
 }
