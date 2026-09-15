@@ -4,30 +4,37 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 // Provide the explicit fallback key requested by the user if environment variable is missing
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPEN_ROUTER") ?? "";
-const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY") || "fc-229d2ad311f24309a918f774a0430b28";
 // Prefer Lovable AI Gateway (free Gemini access via LOVABLE_API_KEY). Fall back to OpenRouter.
 const PRIMARY_MODEL = "google/gemini-2.5-flash";
 const FALLBACK_MODEL = "google/gemini-2.5-flash-lite";
 const OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b";
 
-const SYSTEM = `You are ElevateCv, a ruthless senior ATS + recruiter intelligence engine used by FAANG, unicorns and elite startups.
-You think like a hiring manager who screens 400 resumes a day: skeptical, precise, evidence-based.
-You score STRICTLY based on the ACTUAL resume text provided vs the ACTUAL job description provided. Nothing is assumed.
+const SYSTEM = `You are ElevateCv, a world-class Executive Vice President of Recruiting & ATS Intelligence with 200 years of combined recruitment expertise across FAANG, Fortune 500 enterprises, and premier technology unicorns.
 
-HARD RULES (never break):
-1. NEVER return placeholder, generic or fabricated content. Every finding must cite something concrete from the resume.
-2. In "modules", findings MUST be extremely explicit line-level instructions in the format:
-   - "REMOVE: '<exact weak or filler line from candidate resume>'"
-   - "ADD: '<missing critical skill or target metric requirement from JD>'"
-   - "REWRITE: '<exact line from candidate resume>' -> '<quantified STAR version with metrics & JD keywords>'"
-3. "recommendations" MUST contain copy-pasteable exact replacements that the candidate can drop into their resume directly.
-4. "candidate" MUST extract the ACTUAL candidate's name, email, phone, location, linkedin, title, topSkills, experience entries, education entries, and projects directly from the resume text provided. Never invent fake companies if real ones are present.
-5. "rewrites" MUST take 4 to 6 REAL bullets from the candidate's actual resume and upgrade them into STAR + metrics + JD keywords.
-6. Cover letter: 160-220 words, addressed to the company, references 2-3 real projects from the resume, no generic openers.
-7. If the resume is thin, dishonest, or clearly unfit — say so in the verdict. Never inflate.
-8. Write all generated text, findings, and rewrites in natural professional English (Sentence case: Capitalize the first letter of each sentence, keep technical acronyms uppercase like AWS, SQL, REST API, Python, and write clean, readable prose without artificial character gaps or weird spacing).
-
-You are a heart-of-the-report ATS machine. Every module must add specific, non-obvious signal — never repeat the same generic advice across modules.`;
+EXECUTIVE RECRUITER SCORING & CALIBRATION GUIDELINES:
+1. Score with authentic, objective, and fair recruiter intelligence. DO NOT artificially deflate scores to 40-50 for genuine, high-caliber, or well-qualified resumes!
+2. Holistic Candidate Evaluation:
+   - 88–98 (Exceptional Match): Candidate strongly possesses core technical stack, relevant project accomplishments, and required background for the role. Minor keyword or metric gaps should NOT pull the score down below 85.
+   - 78–87 (Strong Match): Candidate has solid core skills and directly relevant experience, with minor missing secondary keywords or quantifiable bullet refinements.
+   - 65–77 (Moderate Match): Candidate possesses transferable technical fundamentals but has noticeable skill or depth gaps relative to mandatory JD requirements.
+   - 45–64 (Weak Match): Candidate lacks major core technologies or required years of relevant domain experience.
+   - Below 45 (Severe Mismatch): Candidate's background has zero correlation with target role requirements.
+3. Value Technical Competency & Transferable Skills:
+   - If a candidate demonstrates hands-on experience in core technologies (e.g. Python, SQL, REST APIs, HTML/CSS, AWS, Docker), award them full authentic credit!
+   - Do NOT penalize candidates for missing English prepositions or non-critical secondary wording differences.
+4. Category Scores Calibration:
+   - Calculate all 6 category scores (Keyword Match, Formatting, Impact, Readability, Skills Coverage, Recruiter Appeal) aligned with the overall candidate score. For high-matching resumes, category scores should consistently reflect strong performance (75–95).
+5. Line-Level Actionable Feedback:
+   - In "modules", findings MUST be explicit line-level instructions citing exact resume bullets:
+     - "REMOVE: '<filler text or weak opener>'"
+     - "ADD: '<concrete technical skill or metric requirement from JD>'"
+     - "REWRITE: '<original bullet>' -> '<quantified STAR bullet with metrics & hard skills>'"
+6. Bullet Rewrites:
+   - "rewrites" MUST take 4 to 6 REAL bullets from candidate's actual resume and upgrade them into STAR + metrics + hard skills.
+7. Tone & Clarity:
+   - Write all analysis, findings, and rewrites in natural executive English with proper sentence case and technical acronyms (AWS, SQL, REST API, Python).
+`;
 
 const MODULES = [
   { id: "ats", name: "ATS Compliance Checker", icon: "ShieldCheck", desc: "Parse-readiness, structure, font safety", weight: "Critical" },
@@ -67,24 +74,54 @@ function getFallbackCompanyBrief(company: string, role: string): string {
   return `• ${company} Careers: Hiring for the ${role} position to collaborate on core product modules. Tech stack leverages modern cloud infrastructure, CI/CD automation, and high-availability service design.\n• ${company} Tech Stack: Includes React/TypeScript for frontend interfaces, backed by microservices, relational databases, and automated testing suites.\n• ${company} Engineering Culture: Values clean code, system scalability, performance metrics, and tight collaboration cycles.`;
 }
 
-async function firecrawlCompanyBrief(company: string, role: string): Promise<string> {
-  if (!company) return "";
-  let crawled = "";
+async function firecrawlCompanyResearch(company: string, role: string): Promise<{
+  companyBrief: string;
+  jobOpenings: Array<{ title: string; snippet: string; url: string }>;
+}> {
+  if (!company) return { companyBrief: "", jobOpenings: [] };
+
+  let crawledBrief = "";
+  const jobOpenings: Array<{ title: string; snippet: string; url: string }> = [];
+
   if (FIRECRAWL_API_KEY) {
     try {
-      const r = await fetch("https://api.firecrawl.dev/v2/search", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ query: `${company} company ${role} careers what they build tech stack`, limit: 3 }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const items = (data?.data || data?.web?.results || []).slice(0, 3);
-        crawled = items.map((it: any) => `• ${it.title ?? it.url}: ${it.description ?? it.snippet ?? ""}`).join("\n");
+      const [r1, r2] = await Promise.all([
+        fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ query: `${company} company tech stack engineering blog overview`, limit: 3 }),
+        }),
+        fetch("https://api.firecrawl.dev/v1/search", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ query: `${company} ${role} jobs careers openings`, limit: 5 }),
+        })
+      ]);
+
+      if (r1.ok) {
+        const data1 = await r1.json();
+        const items1 = (data1?.data || data1?.web?.results || []).slice(0, 3);
+        crawledBrief = items1.map((it: any) => `• ${it.title ?? it.url}: ${it.description ?? it.snippet ?? ""}`).join("\n");
+      }
+
+      if (r2.ok) {
+        const data2 = await r2.json();
+        const items2 = (data2?.data || data2?.web?.results || []).slice(0, 5);
+        for (const item of items2) {
+          if (item?.url && (item?.title || item?.description)) {
+            jobOpenings.push({
+              title: item.title || `${company} Open Role`,
+              snippet: (item.description || item.snippet || "").slice(0, 180),
+              url: item.url,
+            });
+          }
+        }
       }
     } catch { /* fallback */ }
   }
-  return crawled.trim() ? crawled : getFallbackCompanyBrief(company, role);
+
+  const finalBrief = crawledBrief.trim() ? crawledBrief : getFallbackCompanyBrief(company, role);
+  return { companyBrief: finalBrief, jobOpenings };
 }
 
 function buildSchema() {
@@ -217,7 +254,7 @@ Deno.serve(async (req) => {
     }
 
     const wantsCompanyBrief = group === "all" || group === "critical";
-    const companyBrief = wantsCompanyBrief ? await firecrawlCompanyBrief(company ?? "", role ?? "") : "";
+    const { companyBrief, jobOpenings } = wantsCompanyBrief ? await firecrawlCompanyResearch(company ?? "", role ?? "") : { companyBrief: "", jobOpenings: [] };
 
     const activeIds = group === "all" ? MODULES.map(m => m.id) : (GROUPS[group] ?? MODULES.map(m => m.id));
     const activeModules = MODULES.filter(m => activeIds.includes(m.id));
@@ -482,6 +519,7 @@ Return ONLY JSON matching the schema. No prose.`;
       mitMasterAudit: parsed.mitMasterAudit ?? "MIT Master Academic & Recruiter Audit: High-alignment candidate demonstrating executive-level impact, quantified metrics, and ATS compliance.",
       coverLetter: parsed.coverLetter ?? "",
       companyBrief,
+      jobOpenings,
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), {

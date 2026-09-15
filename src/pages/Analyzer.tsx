@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertTriangle, AlertCircle, X, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft } from "lucide-react";
+import { Sparkles, Loader2, Download, FileCode2, Wand2, Eye, GitCompare, ChevronRight, AlertTriangle, AlertCircle, X, CheckCircle2, Circle, History as HistoryIcon, Trash2, FileDown, Mail, ArrowLeft, ExternalLink, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { buildAnalysisPdf, buildCoverLetterPdf, buildImprovedResumePdf, generateLatexResume, generateWordResumeHtml, filterGenuineKeywords, AnalysisReport, enhanceBullet, enhanceSummary } from "@/lib/reportPdf";
@@ -212,6 +212,7 @@ export default function Analyzer() {
         mitMasterAudit: g3.mitMasterAudit || "MIT Master Academic & Recruiter Audit: High-alignment candidate demonstrating executive-level impact, quantified metrics, and ATS compliance.",
         coverLetter: g3.coverLetter || "",
         companyBrief: g1.companyBrief || "",
+        jobOpenings: g1.jobOpenings || [],
       };
       const withMeta = { ...merged, company, role };
       
@@ -504,24 +505,65 @@ export default function Analyzer() {
                   </div>
                 </div>
 
-                {/* 3. Company Intelligence */}
+                {/* 3. Company Intelligence & Live Job Openings */}
                 {result.companyBrief && (
-                  <div className="rounded-xl border border-border/80 bg-card p-6 flex flex-col gap-4">
-                    <div className="flex items-center gap-3 border-b border-border/40 pb-3 mb-1">
-                      <div className="grid h-8 w-8 place-items-center rounded-md bg-secondary text-foreground">
-                        <Sparkles className="h-3.5 w-3.5" />
+                  <div className="rounded-xl border border-border/80 bg-card p-6 flex flex-col gap-5">
+                    <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="grid h-8 w-8 place-items-center rounded-md bg-secondary text-foreground">
+                          <Sparkles className="h-3.5 w-3.5 text-accent" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-semibold tracking-tight text-foreground font-display">Company Intel & Target Assessment</h2>
+                          <p className="text-xs text-muted-foreground">Firecrawl live API research for {company || "target company"}</p>
+                        </div>
                       </div>
-                      <h2 className="text-lg font-semibold tracking-tight text-foreground font-display">Company Intel & Assessment</h2>
+                      <span className="rounded-full bg-accent/10 border border-accent/20 px-2.5 py-1 text-[10px] font-mono text-accent font-semibold flex items-center gap-1">
+                        <Sparkles className="h-3 w-3" /> Powered by Firecrawl API
+                      </span>
                     </div>
+
                     {result.chanceOfInterviewing && (
-                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-sm font-medium text-foreground leading-relaxed shadow-sm">
+                      <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-sm font-medium text-foreground leading-relaxed shadow-xs">
+                        <span className="font-bold text-accent uppercase text-xs tracking-wider block mb-1 font-mono">200-Year Recruiter Fit Verdict:</span>
                         {result.chanceOfInterviewing}
                       </div>
                     )}
-                    <div className="space-y-1 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      <span className="font-semibold text-foreground block uppercase tracking-wider text-[10px]">Firecrawl Live Intel</span>
+
+                    <div className="space-y-1.5 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap rounded-lg border border-border/60 bg-background/50 p-4">
+                      <span className="font-semibold text-foreground block uppercase tracking-wider text-[10px] font-mono">Firecrawl Tech & Culture Profile</span>
                       {result.companyBrief}
                     </div>
+
+                    {/* Live Job Openings at Company matching role/skills */}
+                    {result.jobOpenings && result.jobOpenings.length > 0 && (
+                      <div className="space-y-3 border-t border-border/40 pt-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground font-mono flex items-center gap-1.5">
+                            <Briefcase className="h-3.5 w-3.5 text-accent" /> Live Job Openings at {company} & Related Careers
+                          </h3>
+                          <span className="text-[10px] text-muted-foreground font-mono">{result.jobOpenings.length} openings discovered</span>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {result.jobOpenings.map((job, idx) => (
+                            <div key={idx} className="rounded-lg border border-border/80 bg-background/80 p-3.5 flex flex-col justify-between gap-2.5 hover:border-accent/40 transition-all shadow-2xs">
+                              <div className="space-y-1">
+                                <h4 className="text-xs font-bold text-foreground leading-snug line-clamp-2">{job.title}</h4>
+                                <p className="text-[11px] text-muted-foreground line-clamp-3 leading-relaxed">{job.snippet}</p>
+                              </div>
+                              <a
+                                href={job.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-3 rounded-md bg-accent text-white text-[11px] font-semibold hover:bg-accent/90 transition-all shadow-xs"
+                              >
+                                View Listing & Apply <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

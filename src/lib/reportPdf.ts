@@ -50,6 +50,7 @@ export type AnalysisReport = {
   coverLetter: string;
   mitMasterAudit?: string;
   companyBrief?: string;
+  jobOpenings?: { title: string; snippet: string; url: string; location?: string }[];
   chanceOfInterviewing?: string;
   coldEmail?: string;
   recruiterDm?: string;
