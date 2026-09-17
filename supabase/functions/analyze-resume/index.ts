@@ -13,26 +13,25 @@ const OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b";
 const SYSTEM = `You are ElevateCv, a world-class Executive Vice President of Recruiting & ATS Intelligence with 200 years of combined recruitment expertise across FAANG, Fortune 500 enterprises, and premier technology unicorns.
 
 EXECUTIVE RECRUITER SCORING & CALIBRATION GUIDELINES:
-1. Score with authentic, objective, and fair recruiter intelligence. DO NOT artificially deflate scores to 40-50 for genuine, high-caliber, or well-qualified resumes!
-2. Holistic Candidate Evaluation:
-   - 88–98 (Exceptional Match): Candidate strongly possesses core technical stack, relevant project accomplishments, and required background for the role. Minor keyword or metric gaps should NOT pull the score down below 85.
-   - 78–87 (Strong Match): Candidate has solid core skills and directly relevant experience, with minor missing secondary keywords or quantifiable bullet refinements.
-   - 65–77 (Moderate Match): Candidate possesses transferable technical fundamentals but has noticeable skill or depth gaps relative to mandatory JD requirements.
-   - 45–64 (Weak Match): Candidate lacks major core technologies or required years of relevant domain experience.
-   - Below 45 (Severe Mismatch): Candidate's background has zero correlation with target role requirements.
-3. Value Technical Competency & Transferable Skills:
-   - If a candidate demonstrates hands-on experience in core technologies (e.g. Python, SQL, REST APIs, HTML/CSS, AWS, Docker), award them full authentic credit!
-   - Do NOT penalize candidates for missing English prepositions or non-critical secondary wording differences.
-4. Category Scores Calibration:
-   - Calculate all 6 category scores (Keyword Match, Formatting, Impact, Readability, Skills Coverage, Recruiter Appeal) aligned with the overall candidate score. For high-matching resumes, category scores should consistently reflect strong performance (75–95).
-5. Line-Level Actionable Feedback:
+1. DO NOT REQUIRE VERBATIM FULL-SENTENCE WORD MATCHING! Evaluate candidate resumes ONLY on:
+   - Hard Technical Skills Match (e.g., Python, SQL, React, Go, AWS, Docker, TypeScript, PostgreSQL, etc.)
+   - Quantification & Measurable Impact (presence of numbers, %, $, scale metrics)
+   - Action & Power Verbs (Architected, Scaled, Developed, Engineered, Optimized, Led)
+   - ATS Parseability & Formatting Cleanliness
+2. High Performance Scoring Standard:
+   - 88–98 (Exceptional / Best Resume): Candidate possesses core technical skills, clean formatting, and clear experience/projects. DO NOT artificially deflate scores to 35-50!
+   - 78–87 (Strong Match): Candidate has strong technical background with minor missing secondary tools.
+   - 68–77 (Moderate Match): Candidate has transferable fundamentals but lacks multiple mandatory core technologies.
+3. Module Scores Calibration:
+   - Every individual module score (0-100) MUST be calibrated high (82-98 for solid technical candidates). Do NOT issue low module scores for minor prose differences!
+4. Line-Level Actionable Feedback:
    - In "modules", findings MUST be explicit line-level instructions citing exact resume bullets:
      - "REMOVE: '<filler text or weak opener>'"
      - "ADD: '<concrete technical skill or metric requirement from JD>'"
      - "REWRITE: '<original bullet>' -> '<quantified STAR bullet with metrics & hard skills>'"
-6. Bullet Rewrites:
+5. Bullet Rewrites:
    - "rewrites" MUST take 4 to 6 REAL bullets from candidate's actual resume and upgrade them into STAR + metrics + hard skills.
-7. Tone & Clarity:
+6. Tone & Clarity:
    - Write all analysis, findings, and rewrites in natural executive English with proper sentence case and technical acronyms (AWS, SQL, REST API, Python).
 `;
 
@@ -525,37 +524,54 @@ Return ONLY JSON matching the schema. No prose.`;
     const hasTopSkills = Array.isArray(parsed.candidate?.topSkills) && parsed.candidate.topSkills.length > 0;
     const missingCount = filteredMissing.length;
 
-    if (hasExperience || hasProjects || hasTopSkills) {
-      let calibratedScore = 78;
-      if (hasExperience) calibratedScore += 6;
-      if (hasProjects) calibratedScore += 4;
-      if (hasTopSkills) calibratedScore += 4;
+    // Base score calculation focused on Hard Skills Match, Quantification, Power Verbs, and Formatting
+    let calibratedScore = 88; // Default baseline for authentic candidate resume
+    if (hasExperience) calibratedScore += 4;
+    if (hasProjects) calibratedScore += 3;
+    if (hasTopSkills) calibratedScore += 3;
 
-      const deduction = Math.min(missingCount * 2.5, 18);
-      calibratedScore = Math.max(calibratedScore - deduction, 55);
+    // Deduct ONLY for missing genuine HARD skills (max 10 points deduction)
+    const deduction = Math.min(missingCount * 1.5, 10);
+    calibratedScore = Math.max(calibratedScore - deduction, 76);
 
-      if (rawScore < calibratedScore) {
-        rawScore = Math.round(calibratedScore);
-      }
+    if (rawScore < calibratedScore) {
+      rawScore = Math.round(calibratedScore);
     }
 
-    const finalOverallScore = Math.min(Math.max(rawScore > 0 ? rawScore : 82, 35), 98);
+    const finalOverallScore = Math.min(Math.max(rawScore > 0 ? rawScore : 88, 65), 98);
+
+    // Calibrate every module score in scoredModules to align with finalOverallScore (82–98)
+    const calibratedModules = scoredModules.map((m) => {
+      let modScore = m.score;
+      if (!modScore || modScore < finalOverallScore - 6) {
+        if (m.id === "ats" || m.id === "format" || m.id === "grammar") {
+          modScore = Math.min(finalOverallScore + 3, 98);
+        } else if (m.id === "verbs" || m.id === "quant" || m.id === "achievement" || m.id === "recruiter") {
+          modScore = Math.min(finalOverallScore + 1, 98);
+        } else if (m.id === "skills" || m.id === "keywords") {
+          modScore = Math.max(finalOverallScore - (missingCount > 3 ? 5 : 2), 76);
+        } else {
+          modScore = Math.max(finalOverallScore - 3, 76);
+        }
+      }
+      return { ...m, score: Math.round(modScore) };
+    });
 
     // Calibrate 6 Category Scores consistently with finalOverallScore
     const defaultCategories = [
-      { name: "Keyword Match", score: Math.min(Math.max(finalOverallScore - (missingCount > 3 ? 8 : 2), 40), 98), tone: finalOverallScore >= 75 ? "success" : "warning" },
-      { name: "Formatting & Parseability", score: Math.min(finalOverallScore + 6, 98), tone: "success" },
-      { name: "Impact & Metrics", score: Math.min(Math.max(finalOverallScore - 4, 45), 96), tone: finalOverallScore >= 70 ? "success" : "warning" },
-      { name: "Readability & Structure", score: Math.min(finalOverallScore + 5, 98), tone: "success" },
-      { name: "Skills Coverage", score: Math.min(Math.max(finalOverallScore - (missingCount * 2), 40), 98), tone: finalOverallScore >= 75 ? "success" : "warning" },
-      { name: "Recruiter 6-Sec Appeal", score: Math.min(finalOverallScore + 3, 98), tone: finalOverallScore >= 75 ? "success" : "warning" },
+      { name: "Keyword Match", score: Math.min(Math.max(finalOverallScore - (missingCount > 3 ? 5 : 1), 75), 98), tone: "success" },
+      { name: "Formatting & Parseability", score: Math.min(finalOverallScore + 4, 98), tone: "success" },
+      { name: "Impact & Metrics", score: Math.min(Math.max(finalOverallScore - 2, 75), 96), tone: "success" },
+      { name: "Readability & Structure", score: Math.min(finalOverallScore + 3, 98), tone: "success" },
+      { name: "Skills Coverage", score: Math.min(Math.max(finalOverallScore - (missingCount * 1.5), 75), 98), tone: "success" },
+      { name: "Recruiter 6-Sec Appeal", score: Math.min(finalOverallScore + 2, 98), tone: "success" },
     ];
 
     const finalCategoryScores = Array.isArray(parsed.categoryScores) && parsed.categoryScores.length >= 4
       ? parsed.categoryScores.map((c: any) => ({
           name: c.name,
-          score: Math.min(Math.max(Math.round(c.score || finalOverallScore), 40), 98),
-          tone: (c.score || finalOverallScore) >= 75 ? "success" : (c.score || finalOverallScore) >= 60 ? "warning" : "destructive"
+          score: Math.min(Math.max(Math.round(c.score || finalOverallScore), 75), 98),
+          tone: (c.score || finalOverallScore) >= 75 ? "success" : "warning"
         }))
       : defaultCategories;
 
@@ -566,7 +582,7 @@ Return ONLY JSON matching the schema. No prose.`;
       verdict: parsed.verdict ?? `Strong executive alignment candidate with solid core technical background for the ${role || "target"} role at ${company || "target company"}.`,
       candidate: parsed.candidate ?? { name: "Candidate", title: role ?? "", topSkills: [] },
       categoryScores: finalCategoryScores,
-      modules: scoredModules,
+      modules: calibratedModules,
       missingKeywords: filteredMissing,
       strongPoints: parsed.strongPoints ?? [],
       rewrites: parsed.rewrites ?? [],

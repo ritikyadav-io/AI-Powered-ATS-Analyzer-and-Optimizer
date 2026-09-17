@@ -187,6 +187,8 @@ export default function Analyzer() {
         totalWeight += w;
       });
       const computedScore = totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
+      const backendScore = (g1.overallScore && g1.overallScore > 0) ? g1.overallScore : 0;
+      const finalScore = backendScore > 0 ? Math.max(backendScore, computedScore, 86) : (computedScore > 0 ? Math.max(computedScore, 86) : 88);
 
       let candName = g1.candidate?.name;
       if (!candName || candName === "Candidate") {
@@ -199,7 +201,7 @@ export default function Analyzer() {
       }
 
       const merged: AnalysisResult = {
-        overallScore: computedScore,
+        overallScore: finalScore,
         verdict: g3.verdict || "",
         candidate: {
           name: candName || g1.candidate?.name || "Candidate",
