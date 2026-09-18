@@ -516,62 +516,77 @@ Return ONLY JSON matching the schema. No prose.`;
 
     const perf = { group, ms: Date.now() - t0, provider: usedProvider, model: usedModel, attemptsLog };
 
-    // Recruiter Calibration Safeguard:
-    // Evaluate candidate assets (experience, projects, topSkills) vs hard skill gaps to calculate fair score
+    // Dynamic Recruiter & ATS Calibration:
+    // Evaluate candidate assets (experience, projects, topSkills) vs genuine missing hard technical skills
     let rawScore = Math.round(Number(parsed.overallScore) || 0);
-    const hasExperience = Array.isArray(parsed.candidate?.experience) && parsed.candidate.experience.length > 0;
-    const hasProjects = Array.isArray(parsed.candidate?.projects) && parsed.candidate.projects.length > 0;
-    const hasTopSkills = Array.isArray(parsed.candidate?.topSkills) && parsed.candidate.topSkills.length > 0;
     const missingCount = filteredMissing.length;
 
-    // Base score calculation focused on Hard Skills Match, Quantification, Power Verbs, and Formatting
-    let calibratedScore = 88; // Default baseline for authentic candidate resume
-    if (hasExperience) calibratedScore += 4;
-    if (hasProjects) calibratedScore += 3;
-    if (hasTopSkills) calibratedScore += 3;
+    // Domain Mismatch Detection (e.g., Cloud/DevOps candidate applying for Backend Engineer role)
+    const candTitle = (parsed.candidate?.title || "").toLowerCase();
+    const targetRole = (role || "").toLowerCase();
+    let domainMismatchPenalty = 0;
 
-    // Deduct ONLY for missing genuine HARD skills (max 10 points deduction)
-    const deduction = Math.min(missingCount * 1.5, 10);
-    calibratedScore = Math.max(calibratedScore - deduction, 76);
-
-    if (rawScore < calibratedScore) {
-      rawScore = Math.round(calibratedScore);
+    if (targetRole.includes("backend") || targetRole.includes("software engineer")) {
+      if (candTitle.includes("cloud") || candTitle.includes("devops") || candTitle.includes("sysadmin") || candTitle.includes("infrastructure")) {
+        // Check if resume contains core backend programming languages
+        const hasBackendLang = /\b(golang|go|python|java|c\+\+|node|nodejs|express|rust|scala|ruby|php|sql|postgres|postgresql)\b/i.test(resumeCorpus);
+        if (!hasBackendLang) {
+          domainMismatchPenalty = 24; // Major domain mismatch (e.g. Cloud Architect applying for Go/Python Backend role)
+        } else {
+          domainMismatchPenalty = 10;
+        }
+      }
     }
 
-    const finalOverallScore = Math.min(Math.max(rawScore > 0 ? rawScore : 88, 65), 98);
+    // Dynamic Skill Match Calculation:
+    // 0-1 missing hard skill -> 92-96 (Exceptional / Best Match)
+    // 2-3 missing hard skills -> 84-90 (Strong Match)
+    // 4-6 missing hard skills -> 68-80 (Moderate Match)
+    // 7-9 missing hard skills -> 52-64 (Weak Match)
+    // 10+ missing hard skills -> 38-48 (Severe Mismatch)
+    let dynamicScore = 95;
+    if (missingCount <= 1) dynamicScore = 95;
+    else if (missingCount <= 3) dynamicScore = 90 - (missingCount - 1) * 3;
+    else if (missingCount <= 6) dynamicScore = 80 - (missingCount - 3) * 4;
+    else if (missingCount <= 9) dynamicScore = 64 - (missingCount - 6) * 4;
+    else dynamicScore = Math.max(48 - (missingCount - 9) * 3, 35);
 
-    // Calibrate every module score in scoredModules to align with finalOverallScore (82–98)
+    // Apply domain mismatch penalty if role domain disconnect is detected
+    dynamicScore = Math.max(dynamicScore - domainMismatchPenalty, 35);
+
+    // Combine raw LLM evaluation with dynamic skill match score
+    let finalOverallScore = rawScore > 0 
+      ? Math.round((rawScore * 0.4) + (dynamicScore * 0.6))
+      : Math.round(dynamicScore);
+
+    finalOverallScore = Math.min(Math.max(finalOverallScore, 35), 98);
+
+    // Calibrate every module score in scoredModules to align naturally with finalOverallScore
     const calibratedModules = scoredModules.map((m) => {
-      let modScore = m.score;
-      if (!modScore || modScore < finalOverallScore - 6) {
-        if (m.id === "ats" || m.id === "format" || m.id === "grammar") {
-          modScore = Math.min(finalOverallScore + 3, 98);
-        } else if (m.id === "verbs" || m.id === "quant" || m.id === "achievement" || m.id === "recruiter") {
-          modScore = Math.min(finalOverallScore + 1, 98);
-        } else if (m.id === "skills" || m.id === "keywords") {
-          modScore = Math.max(finalOverallScore - (missingCount > 3 ? 5 : 2), 76);
-        } else {
-          modScore = Math.max(finalOverallScore - 3, 76);
-        }
+      let modScore = m.score > 0 ? m.score : finalOverallScore;
+      if (modScore < finalOverallScore - 12) {
+        modScore = Math.max(finalOverallScore - 8, 35);
+      } else if (modScore > finalOverallScore + 10) {
+        modScore = Math.min(finalOverallScore + 6, 98);
       }
       return { ...m, score: Math.round(modScore) };
     });
 
     // Calibrate 6 Category Scores consistently with finalOverallScore
     const defaultCategories = [
-      { name: "Keyword Match", score: Math.min(Math.max(finalOverallScore - (missingCount > 3 ? 5 : 1), 75), 98), tone: "success" },
+      { name: "Keyword Match", score: Math.min(Math.max(finalOverallScore - (missingCount * 2), 35), 98), tone: finalOverallScore >= 75 ? "success" : finalOverallScore >= 60 ? "warning" : "destructive" },
       { name: "Formatting & Parseability", score: Math.min(finalOverallScore + 4, 98), tone: "success" },
-      { name: "Impact & Metrics", score: Math.min(Math.max(finalOverallScore - 2, 75), 96), tone: "success" },
+      { name: "Impact & Metrics", score: Math.min(Math.max(finalOverallScore - 2, 35), 96), tone: finalOverallScore >= 70 ? "success" : "warning" },
       { name: "Readability & Structure", score: Math.min(finalOverallScore + 3, 98), tone: "success" },
-      { name: "Skills Coverage", score: Math.min(Math.max(finalOverallScore - (missingCount * 1.5), 75), 98), tone: "success" },
-      { name: "Recruiter 6-Sec Appeal", score: Math.min(finalOverallScore + 2, 98), tone: "success" },
+      { name: "Skills Coverage", score: Math.min(Math.max(finalOverallScore - (missingCount * 2.5), 35), 98), tone: finalOverallScore >= 75 ? "success" : finalOverallScore >= 60 ? "warning" : "destructive" },
+      { name: "Recruiter 6-Sec Appeal", score: Math.min(finalOverallScore + 2, 98), tone: finalOverallScore >= 75 ? "success" : finalOverallScore >= 60 ? "warning" : "destructive" },
     ];
 
     const finalCategoryScores = Array.isArray(parsed.categoryScores) && parsed.categoryScores.length >= 4
       ? parsed.categoryScores.map((c: any) => ({
           name: c.name,
-          score: Math.min(Math.max(Math.round(c.score || finalOverallScore), 75), 98),
-          tone: (c.score || finalOverallScore) >= 75 ? "success" : "warning"
+          score: Math.min(Math.max(Math.round(c.score || finalOverallScore), 35), 98),
+          tone: (c.score || finalOverallScore) >= 75 ? "success" : (c.score || finalOverallScore) >= 60 ? "warning" : "destructive"
         }))
       : defaultCategories;
 
