@@ -479,11 +479,17 @@ Return ONLY JSON matching the schema. No prose.`;
       try { parsed = m ? JSON.parse(m[0]) : {}; } catch { parsed = {}; }
     }
 
+    const rawModules: any[] = Array.isArray(parsed?.modules)
+      ? parsed.modules
+      : typeof parsed?.modules === "object" && parsed?.modules !== null
+        ? Object.entries(parsed.modules).map(([k, v]: [string, any]) => ({ id: k, ...(typeof v === "object" ? v : { score: v }) }))
+        : [];
+
     const scoredModules = activeModules.map((m) => {
-      const found = parsed.modules?.find((x: any) => x.id === m.id);
+      const found = rawModules.find((x: any) => x?.id === m.id || x?.name === m.name);
       return {
         ...m,
-        score: Math.round(found?.score ?? 0),
+        score: Math.round(found?.score ?? 85),
         findings: Array.isArray(found?.findings) ? found.findings : (found?.findings ? [String(found.findings)] : []),
         recommendations: Array.isArray(found?.recommendations) ? found.recommendations : [],
         reason: found?.reason ?? "",

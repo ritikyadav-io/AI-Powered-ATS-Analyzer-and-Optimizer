@@ -124,8 +124,14 @@ Return ONLY JSON matching the requested schema. No prose.`;
     parsed = match ? JSON.parse(match[0]) : {};
   }
 
+  const rawModules: any[] = Array.isArray(parsed?.modules)
+    ? parsed.modules
+    : typeof parsed?.modules === "object" && parsed?.modules !== null
+      ? Object.entries(parsed.modules).map(([k, v]: [string, any]) => ({ id: k, ...(typeof v === "object" ? v : { score: v }) }))
+      : [];
+
   const scoredModules = activeModules.map((m) => {
-    const found = parsed.modules?.find((x: any) => x.id === m.id);
+    const found = rawModules.find((x: any) => x?.id === m.id || x?.name === m.name);
     return {
       ...m,
       score: Math.round(found?.score ?? 85),
