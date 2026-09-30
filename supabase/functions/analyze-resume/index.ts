@@ -1,14 +1,14 @@
 // deno-lint-ignore-file no-explicit-any
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("GOOGLE_API_KEY") || "AIzaSyB5o12gomb52F1kJ4Mei6TCXPTFfuzCZJA";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-// Provide the explicit fallback key requested by the user if environment variable is missing
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY") ?? Deno.env.get("OPEN_ROUTER") ?? "";
 const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY") || "fc-229d2ad311f24309a918f774a0430b28";
-// Prefer Lovable AI Gateway (free Gemini access via LOVABLE_API_KEY). Fall back to OpenRouter.
+
 const PRIMARY_MODEL = "google/gemini-2.5-flash";
 const FALLBACK_MODEL = "google/gemini-2.5-flash-lite";
-const OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b";
+const OPENROUTER_MODEL = "google/gemini-2.0-flash-exp:free";
 
 const SYSTEM = `You are ElevateCv, a world-class Executive Vice President of Recruiting & ATS Intelligence with 200 years of combined recruitment expertise across FAANG, Fortune 500 enterprises, and premier technology unicorns.
 
@@ -232,8 +232,8 @@ function buildSchema() {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (!LOVABLE_API_KEY && !OPENROUTER_API_KEY) {
-    return new Response(JSON.stringify({ error: "No AI provider key configured (need LOVABLE_API_KEY or OPENROUTER_API_KEY)." }), {
+  if (!GEMINI_API_KEY && !LOVABLE_API_KEY && !OPENROUTER_API_KEY) {
+    return new Response(JSON.stringify({ error: "No AI provider key configured (need GEMINI_API_KEY, LOVABLE_API_KEY, or OPENROUTER_API_KEY)." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -315,10 +315,10 @@ Return ONLY JSON matching the schema. No prose.`;
       userContent.push({ type: "text", text: `Resume:\n"""${resumeText}"""` });
     }
 
-    async function callGateway(provider: "lovable" | "openrouter", model: string, _useJsonSchema: boolean) {
+    async function callGateway(provider: "gemini" | "lovable" | "openrouter", model: string, _useJsonSchema: boolean) {
       let finalUserContent = userContent;
-      // OpenRouter does not support the Lovable/Anthropic proprietary 'file' format in the user message array.
-      if (provider === "openrouter") {
+      // Gemini and OpenRouter do not support Lovable proprietary file format
+      if (provider === "openrouter" || provider === "gemini") {
         finalUserContent = [
           { type: "text", text: promptText },
           { type: "text", text: `Resume:\n"""${resumeText}"""` }
@@ -334,24 +334,40 @@ Return ONLY JSON matching the schema. No prose.`;
         temperature: 0.2,
         response_format: { type: "json_object" },
       };
-      const url = provider === "lovable"
+      const url = provider === "gemini"
+        ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        : provider === "lovable"
         ? "https://ai.gateway.lovable.dev/v1/chat/completions"
         : "https://openrouter.ai/api/v1/chat/completions";
-      const key = provider === "lovable" ? LOVABLE_API_KEY : OPENROUTER_API_KEY;
+
+      const key = provider === "gemini"
+        ? GEMINI_API_KEY
+        : provider === "lovable"
+        ? LOVABLE_API_KEY
+        : OPENROUTER_API_KEY;
+
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      };
+      if (provider !== "gemini") {
+        headers["HTTP-Referer"] = "https://elevatecv.app";
+        headers["X-Title"] = "ElevateCv";
+      }
+
       return fetch(url, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${key}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://elevatecv.app",
-          "X-Title": "ElevateCv",
-        },
+        headers,
         body: JSON.stringify(b),
       });
     }
 
     // Try providers/models in order until one succeeds.
-    const attempts: Array<{ provider: "lovable" | "openrouter"; model: string; schema: boolean }> = [];
+    const attempts: Array<{ provider: "gemini" | "lovable" | "openrouter"; model: string; schema: boolean }> = [];
+    if (GEMINI_API_KEY) {
+      attempts.push({ provider: "gemini", model: "gemini-2.5-flash", schema: true });
+      attempts.push({ provider: "gemini", model: "gemini-2.5-flash", schema: false });
+    }
     if (LOVABLE_API_KEY) {
       attempts.push({ provider: "lovable", model: PRIMARY_MODEL, schema: true });
       attempts.push({ provider: "lovable", model: FALLBACK_MODEL, schema: true });
