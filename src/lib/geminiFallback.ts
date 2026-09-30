@@ -1,6 +1,6 @@
 // Client-side fallback analyzer using Google Gemini API directly when Supabase Edge Function is unreachable or fails
 
-const DEFAULT_GEMINI_KEY = "AIzaSyB5o12gomb52F1kJ4Mei6TCXPTFfuzCZJA";
+const DEFAULT_GEMINI_KEY = "";
 
 const SYSTEM = `You are ElevateCv, a world-class Executive Vice President of Recruiting & ATS Intelligence with 200 years of combined recruitment expertise across FAANG, Fortune 500 enterprises, and premier technology unicorns.
 
