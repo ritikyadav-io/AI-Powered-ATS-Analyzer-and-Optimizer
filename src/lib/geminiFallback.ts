@@ -1,6 +1,7 @@
-// Client-side fallback analyzer using Google Gemini API directly when Supabase Edge Function is unreachable or fails
+// Client-side fallback analyzer using OpenRouter API when Supabase Edge Function is unreachable or fails
 
-const DEFAULT_GEMINI_KEY = "";
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
 const SYSTEM = `You are ElevateCv, a world-class Executive Vice President of Recruiting & ATS Intelligence with 200 years of combined recruitment expertise across FAANG, Fortune 500 enterprises, and premier technology unicorns.
 
@@ -49,7 +50,11 @@ const GROUPS: Record<string, string[]> = {
 };
 
 export async function geminiAnalyzeFallback(group: "critical" | "high" | "action", body: any): Promise<any> {
-  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || DEFAULT_GEMINI_KEY).trim();
+  const apiKey = (import.meta.env.VITE_OPENROUTER_API_KEY || "").trim();
+  if (!apiKey) {
+    throw new Error("OpenRouter API key not configured. Set VITE_OPENROUTER_API_KEY in your .env file.");
+  }
+
   const { resumeText, resumeFile, resumeMime, resumeName, jobDescription, company, role, location, tone } = body;
 
   const activeIds = group === "all" ? MODULES.map(m => m.id) : (GROUPS[group] ?? MODULES.map(m => m.id));
@@ -76,9 +81,7 @@ export async function geminiAnalyzeFallback(group: "critical" | "high" | "action
 - chanceOfInterviewing: a specific 1-2 sentence honest assessment of their chances of getting an interview based on the ATS score, their background, and target role.`
       : "";
 
-  const promptText = `${SYSTEM}
-
-Target company: ${company || "N/A"}
+  const promptText = `Target company: ${company || "N/A"}
 Target role: ${role || "N/A"}
 Tone preference for rewrites: ${tone || "Technical"}
 
@@ -90,43 +93,52 @@ ${moduleList ? `For each of these modules return: score (0-100), findings (3-5 b
 ${(!resumeFile && resumeText) ? `Resume:\n"""${resumeText}"""\n` : ""}
 Return ONLY valid JSON matching the requested schema. No prose outside JSON.`;
 
-  // Build the parts array for Gemini native API
-  const parts: any[] = [{ text: promptText }];
+  // Build messages array for OpenRouter (OpenAI-compatible format)
+  const messages: any[] = [
+    { role: "system", content: SYSTEM },
+  ];
 
-  // If we have a PDF/DOCX file, send it as inline_data to Gemini native API
+  // Build user message content - support multimodal if file is available
   if (resumeFile && resumeMime) {
-    parts.push({
-      inline_data: {
-        mime_type: resumeMime,
-        data: resumeFile,
+    // Multimodal: send file as base64 data URL + text prompt
+    const userContent: any[] = [
+      { type: "text", text: promptText },
+      {
+        type: "image_url",
+        image_url: {
+          url: `data:${resumeMime};base64,${resumeFile}`,
+        }
       }
-    });
+    ];
+    messages.push({ role: "user", content: userContent });
+  } else {
+    // Text-only
+    messages.push({ role: "user", content: promptText });
   }
 
-  // Use Gemini native v1beta endpoint (supports inline PDF/DOCX)
-  const nativeUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-  const nativePayload = {
-    contents: [{ parts }],
-    generationConfig: {
-      responseMimeType: "application/json",
-      temperature: 0.2,
-    }
-  };
-
-  const response = await fetch(nativeUrl, {
+  const response = await fetch(OPENROUTER_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(nativePayload),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": window.location.origin,
+      "X-Title": "ElevateCv Resume Analyzer",
+    },
+    body: JSON.stringify({
+      model: DEFAULT_MODEL,
+      messages,
+      response_format: { type: "json_object" },
+      temperature: 0.2,
+    }),
   });
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Gemini API direct call failed (${response.status}): ${errText}`);
+    throw new Error(`OpenRouter API call failed (${response.status}): ${errText}`);
   }
 
   const data = await response.json();
-  const rawContent = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+  const rawContent = data?.choices?.[0]?.message?.content ?? "{}";
   let parsed: any;
   try {
     parsed = typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
@@ -193,8 +205,12 @@ Return ONLY valid JSON matching the requested schema. No prose outside JSON.`;
       }))
     : defaultCategories;
 
+  // Extract model info from OpenRouter response
+  const usedModel = data?.model || DEFAULT_MODEL;
+  const latencyMs = data?.usage?.total_tokens ? Math.round(data.usage.total_tokens * 0.8) : 1200;
+
   return {
-    _perf: { group, ms: 1200, provider: "gemini-client-fallback", model: "gemini-2.5-flash" },
+    _perf: { group, ms: latencyMs, provider: "openrouter-client-fallback", model: usedModel },
     group,
     overallScore: finalOverallScore,
     verdict: parsed.verdict ?? `Strong executive alignment candidate with solid core technical background for the ${role || "target"} role at ${company || "target company"}.`,
