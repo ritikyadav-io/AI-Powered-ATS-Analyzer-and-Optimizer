@@ -50,7 +50,7 @@ const GROUPS: Record<string, string[]> = {
 
 export async function geminiAnalyzeFallback(group: "critical" | "high" | "action", body: any): Promise<any> {
   const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || DEFAULT_GEMINI_KEY).trim();
-  const { resumeText, jobDescription, company, role, location, tone } = body;
+  const { resumeText, resumeFile, resumeMime, resumeName, jobDescription, company, role, location, tone } = body;
 
   const activeIds = group === "all" ? MODULES.map(m => m.id) : (GROUPS[group] ?? MODULES.map(m => m.id));
   const activeModules = MODULES.filter(m => activeIds.includes(m.id));
@@ -76,7 +76,9 @@ export async function geminiAnalyzeFallback(group: "critical" | "high" | "action
 - chanceOfInterviewing: a specific 1-2 sentence honest assessment of their chances of getting an interview based on the ATS score, their background, and target role.`
       : "";
 
-  const promptText = `Target company: ${company || "N/A"}
+  const promptText = `${SYSTEM}
+
+Target company: ${company || "N/A"}
 Target role: ${role || "N/A"}
 Tone preference for rewrites: ${tone || "Technical"}
 
@@ -85,28 +87,37 @@ Job description:
 
 ${moduleList ? `For each of these modules return: score (0-100), findings (3-5 bullets), recommendations (2-4 concrete fixes with exact wording), reason (1 sentence). Reference the resume literally.\n${moduleList}\n\n` : ""}${extrasBlock}
 
-Resume:
-"""${resumeText}"""
+${(!resumeFile && resumeText) ? `Resume:\n"""${resumeText}"""\n` : ""}
+Return ONLY valid JSON matching the requested schema. No prose outside JSON.`;
 
-Return ONLY JSON matching the requested schema. No prose.`;
+  // Build the parts array for Gemini native API
+  const parts: any[] = [{ text: promptText }];
 
-  const payload = {
-    model: "gemini-2.5-flash",
-    messages: [
-      { role: "system", content: SYSTEM },
-      { role: "user", content: promptText }
-    ],
-    temperature: 0.2,
-    response_format: { type: "json_object" }
+  // If we have a PDF/DOCX file, send it as inline_data to Gemini native API
+  if (resumeFile && resumeMime) {
+    parts.push({
+      inline_data: {
+        mime_type: resumeMime,
+        data: resumeFile,
+      }
+    });
+  }
+
+  // Use Gemini native v1beta endpoint (supports inline PDF/DOCX)
+  const nativeUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+  const nativePayload = {
+    contents: [{ parts }],
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature: 0.2,
+    }
   };
 
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+  const response = await fetch(nativeUrl, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(nativePayload),
   });
 
   if (!response.ok) {
@@ -115,13 +126,13 @@ Return ONLY JSON matching the requested schema. No prose.`;
   }
 
   const data = await response.json();
-  const rawContent = data?.choices?.[0]?.message?.content ?? "{}";
+  const rawContent = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
   let parsed: any;
   try {
     parsed = typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
   } catch {
     const match = typeof rawContent === "string" ? rawContent.match(/\{[\s\S]*\}/) : null;
-    parsed = match ? JSON.parse(match[0]) : {};
+    try { parsed = match ? JSON.parse(match[0]) : {}; } catch { parsed = {}; }
   }
 
   const rawModules: any[] = Array.isArray(parsed?.modules)
