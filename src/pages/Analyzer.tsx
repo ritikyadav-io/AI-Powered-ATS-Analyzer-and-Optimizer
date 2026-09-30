@@ -17,6 +17,7 @@ import { buildAnalysisPdf, buildCoverLetterPdf, buildImprovedResumePdf, generate
 import { RECRUITER_QUOTES } from "@/data/recruiterQuotes";
 import { ResumeTricksModal } from "@/components/analyzer/ResumeTricksModal";
 import { getHistory, saveHistory, removeHistory, HistoryEntry } from "@/lib/historyStore";
+import { geminiAnalyzeFallback } from "@/lib/geminiFallback";
 import { Pencil, Check, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -132,15 +133,20 @@ export default function Analyzer() {
 
   const invokeGroup = async (group: "critical" | "high" | "action", body: Record<string, unknown>) => {
     const t0 = performance.now();
-    const { data, error } = await supabase.functions.invoke("analyze-resume", {
-      body: { ...body, group, debugFailPrimary },
-    });
-    const ms = Math.round(performance.now() - t0);
-    if (error) throw new Error(`[${group}] ${error.message}`);
-    if ((data as any)?.error) throw new Error(`[${group}] ${(data as any).error}`);
-    const perf = (data as any)?._perf;
-    console.info(`[perf] group=${group} client=${ms}ms server=${perf?.ms ?? "?"}ms provider=${perf?.provider ?? "?"} model=${perf?.model ?? "?"}`);
-    return data as any;
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-resume", {
+        body: { ...body, group, debugFailPrimary },
+      });
+      const ms = Math.round(performance.now() - t0);
+      if (error) throw new Error(`[${group}] ${error.message}`);
+      if ((data as any)?.error) throw new Error(`[${group}] ${(data as any).error}`);
+      const perf = (data as any)?._perf;
+      console.info(`[perf] group=${group} client=${ms}ms server=${perf?.ms ?? "?"}ms provider=${perf?.provider ?? "?"} model=${perf?.model ?? "?"}`);
+      return data as any;
+    } catch (err: any) {
+      console.warn(`[invokeGroup fallback] ${group} edge function error: ${err?.message}. Executing direct Gemini client analysis...`);
+      return await geminiAnalyzeFallback(group, body);
+    }
   };
 
   const run = async () => {
