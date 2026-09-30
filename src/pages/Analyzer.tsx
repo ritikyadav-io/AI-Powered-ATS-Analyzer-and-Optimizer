@@ -144,7 +144,7 @@ export default function Analyzer() {
       console.info(`[perf] group=${group} client=${ms}ms server=${perf?.ms ?? "?"}ms provider=${perf?.provider ?? "?"} model=${perf?.model ?? "?"}`);
       return data as any;
     } catch (err: any) {
-      console.warn(`[invokeGroup fallback] ${group} edge function error: ${err?.message}. Executing direct OpenRouter client analysis...`);
+      console.warn(`[invokeGroup fallback] ${group} edge function error: ${err?.message}. Executing direct Groq client analysis...`);
       return await geminiAnalyzeFallback(group, body);
     }
   };

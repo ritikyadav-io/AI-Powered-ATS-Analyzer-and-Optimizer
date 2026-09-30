@@ -1,7 +1,7 @@
-// Client-side fallback analyzer using OpenRouter API when Supabase Edge Function is unreachable or fails
+// Client-side fallback analyzer using Groq API when Supabase Edge Function is unreachable or fails
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "google/gemini-2.5-flash";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const DEFAULT_MODEL = "llama-3.3-70b-versatile";
 
 const SYSTEM = `You are ElevateCv, a world-class Executive Vice President of Recruiting & ATS Intelligence with 200 years of combined recruitment expertise across FAANG, Fortune 500 enterprises, and premier technology unicorns.
 
@@ -50,9 +50,9 @@ const GROUPS: Record<string, string[]> = {
 };
 
 export async function geminiAnalyzeFallback(group: "critical" | "high" | "action", body: any): Promise<any> {
-  const apiKey = (import.meta.env.VITE_OPENROUTER_API_KEY || "").trim();
+  const apiKey = (import.meta.env.VITE_GROQ_API_KEY || "").trim();
   if (!apiKey) {
-    throw new Error("OpenRouter API key not configured. Set VITE_OPENROUTER_API_KEY in your .env file.");
+    throw new Error("Groq API key not configured. Set VITE_GROQ_API_KEY in your .env file.");
   }
 
   const { resumeText, resumeFile, resumeMime, resumeName, jobDescription, company, role, location, tone } = body;
@@ -90,51 +90,33 @@ Job description:
 
 ${moduleList ? `For each of these modules return: score (0-100), findings (3-5 bullets), recommendations (2-4 concrete fixes with exact wording), reason (1 sentence). Reference the resume literally.\n${moduleList}\n\n` : ""}${extrasBlock}
 
-${(!resumeFile && resumeText) ? `Resume:\n"""${resumeText}"""\n` : ""}
+${resumeText ? `Resume:\n"""${resumeText}"""\n` : ""}
 Return ONLY valid JSON matching the requested schema. No prose outside JSON.`;
 
-  // Build messages array for OpenRouter (OpenAI-compatible format)
+  // Build messages array for Groq (OpenAI-compatible format)
   const messages: any[] = [
     { role: "system", content: SYSTEM },
+    { role: "user", content: promptText },
   ];
 
-  // Build user message content - support multimodal if file is available
-  if (resumeFile && resumeMime) {
-    // Multimodal: send file as base64 data URL + text prompt
-    const userContent: any[] = [
-      { type: "text", text: promptText },
-      {
-        type: "image_url",
-        image_url: {
-          url: `data:${resumeMime};base64,${resumeFile}`,
-        }
-      }
-    ];
-    messages.push({ role: "user", content: userContent });
-  } else {
-    // Text-only
-    messages.push({ role: "user", content: promptText });
-  }
-
-  const response = await fetch(OPENROUTER_URL, {
+  const response = await fetch(GROQ_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": window.location.origin,
-      "X-Title": "ElevateCv Resume Analyzer",
     },
     body: JSON.stringify({
       model: DEFAULT_MODEL,
       messages,
       response_format: { type: "json_object" },
       temperature: 0.2,
+      max_tokens: 8000,
     }),
   });
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`OpenRouter API call failed (${response.status}): ${errText}`);
+    throw new Error(`Groq API call failed (${response.status}): ${errText}`);
   }
 
   const data = await response.json();
@@ -210,7 +192,7 @@ Return ONLY valid JSON matching the requested schema. No prose outside JSON.`;
   const latencyMs = data?.usage?.total_tokens ? Math.round(data.usage.total_tokens * 0.8) : 1200;
 
   return {
-    _perf: { group, ms: latencyMs, provider: "openrouter-client-fallback", model: usedModel },
+    _perf: { group, ms: latencyMs, provider: "groq-client-fallback", model: usedModel },
     group,
     overallScore: finalOverallScore,
     verdict: parsed.verdict ?? `Strong executive alignment candidate with solid core technical background for the ${role || "target"} role at ${company || "target company"}.`,
